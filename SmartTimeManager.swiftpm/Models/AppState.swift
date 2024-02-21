@@ -9,6 +9,7 @@ class AppState: ObservableObject {
     
     func appDidFinishLaunching() {
         tasksInteractor.updateTaskList()
+        tasksInteractor.subscribeOnUpdates()
     }
     
     func appDidBecomeActive() {

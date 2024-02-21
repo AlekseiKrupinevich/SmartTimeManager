@@ -13,6 +13,12 @@ class TasksInteractor: ObservableObject {
         self.tasksRepository = tasksRepository
     }
     
+    func subscribeOnUpdates() {
+        tasksRepository.subscribe { [weak self] in
+            self?.updateTaskList()
+        }
+    }
+    
     func updateTaskList() {
         viewModel.items = tasksRepository.tasks()
             .filter { $0.isOccurring(on: viewModel.date) }

@@ -18,4 +18,8 @@ class RealTasksRepository: TasksRepository {
     func deleteTask(id: String) {
         
     }
+    
+    func subscribe(onUpdate: @escaping () -> Void) {
+        
+    }
 }

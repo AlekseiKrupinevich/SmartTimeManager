@@ -47,4 +47,19 @@ class MockTasksRepository: TasksRepository {
     func deleteTask(id: String) {
         _tasks.removeAll(where: { $0.id == id })
     }
+    
+    func subscribe(onUpdate: @escaping () -> Void) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3)) { [weak self] in
+            self?._tasks.append(
+                .init(
+                    id: UUID().uuidString,
+                    title: "A task that has been added after the app was started",
+                    notes: "",
+                    type: .oneTime(.init(date: Date().withoutTime)),
+                    completionDates: []
+                )
+            )
+            onUpdate()
+        }
+    }
 }
