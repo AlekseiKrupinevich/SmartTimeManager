@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct TaskDetailView: View {
-    @EnvironmentObject private var interactor: TasksInteractor
+struct TaskDetailView<DI: DIProtocol>: View {
+    @EnvironmentObject private var interactor: DI.TasksInteractorType
     @State private var task: TaskModel
     @State private var originalTask: TaskModel
     @State private var isTaskModified = false
@@ -20,48 +20,49 @@ struct TaskDetailView: View {
             .toolbar {
                 if isTaskModified {
                     ToolbarItemGroup(placement: .navigationBarLeading) {
-                        Button(
-                            action: {
-                                task = originalTask
-                                isTaskModified = false
-                            },
-                            label: {
-                                Text("Cancel")
-                            }
-                        )
+                        Button(action: cancel) {
+                            Text("Cancel")
+                        }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(
-                            action: {
-                                do {
-                                    try interactor.validate(task)
-                                    interactor.update(task)
-                                    reloadTask()
-                                    isTaskModified = false
-                                } catch {
-                                    alertTitle = "\(error)"
-                                    isAlertPresented = true
-                                }
-                            },
-                            label: {
-                                Text("Save")
-                            }
-                        )
+                        Button(action: save) {
+                            Text("Save")
+                        }
                     }
                 }
             }
             .navigationBarBackButtonHidden(isTaskModified)
             .alert(alertTitle, isPresented: $isAlertPresented, actions: {})
-            .onAppear(perform: reloadTask)
+            .onAppear(perform: update)
             .onChange(of: task) { _, _ in
                 isTaskModified = originalTask != task
             }
     }
+}
+
+extension TaskDetailView {
+    private func cancel() {
+        task = originalTask
+        isTaskModified = false
+    }
     
-    private func reloadTask() {
-        if let task = interactor.task(id: task.id) {
-            self.task = task
-            self.originalTask = task
+    private func save() {
+        do {
+            try interactor.validate(task)
+            interactor.update(task)
+            update()
+            isTaskModified = false
+        } catch {
+            alertTitle = "\(error)"
+            isAlertPresented = true
         }
+    }
+    
+    private func update() {
+        guard let task = interactor.task(id: task.id) else {
+            return
+        }
+        self.task = task
+        originalTask = task
     }
 }

@@ -1,7 +1,8 @@
 import SwiftUI
 
-struct AddTaskSheet: View {
-    @EnvironmentObject private var interactor: TasksInteractor
+struct AddTaskSheet<DI: DIProtocol>: View {
+    @EnvironmentObject private var viewModel: TasksViewModel<DI>
+    @EnvironmentObject private var interactor: DI.TasksInteractorType
     @State private var task: TaskModel
     @State private var isAlertPresented = false
     @State private var alertTitle = ""
@@ -16,29 +17,35 @@ struct AddTaskSheet: View {
                 .navigationTitle("Add Task")
                 .toolbar {
                     ToolbarItemGroup(placement: .navigationBarLeading) {
-                        Button(action: interactor.hideAddTaskSheet) {
+                        Button(action: hide) {
                             Text("Cancel")
                         }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(
-                            action: {
-                                do {
-                                    try interactor.validate(task)
-                                    interactor.addTask(task)
-                                } catch {
-                                    alertTitle = "\(error)"
-                                    isAlertPresented = true
-                                }
-                            },
-                            label: {
-                                Text("Add")
-                            }
-                        )
+                        Button(action: add) {
+                            Text("Add")
+                        }
                     }
                 }
                 .interactiveDismissDisabled()
                 .alert(alertTitle, isPresented: $isAlertPresented, actions: {})
+        }
+    }
+}
+
+extension AddTaskSheet {
+    private func hide() {
+        viewModel.isAddTaskSheetVisible = false
+    }
+    
+    private func add() {
+        do {
+            try interactor.validate(task)
+            interactor.add(task)
+            hide()
+        } catch {
+            alertTitle = "\(error)"
+            isAlertPresented = true
         }
     }
 }

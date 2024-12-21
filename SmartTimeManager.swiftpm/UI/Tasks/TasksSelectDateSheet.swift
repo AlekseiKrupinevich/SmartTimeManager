@@ -1,8 +1,7 @@
 import SwiftUI
 
-struct TasksSelectDateSheet: View {
-    @EnvironmentObject private var viewModel: TasksViewModel
-    @EnvironmentObject private var interactor: TasksInteractor
+struct TasksSelectDateSheet<DI: DIProtocol>: View {
+    @EnvironmentObject private var viewModel: TasksViewModel<DI>
     @State private var date = Date()
     
     var body: some View {
@@ -14,7 +13,7 @@ struct TasksSelectDateSheet: View {
                     displayedComponents: [.date]
                 )
                 .datePickerStyle(GraphicalDatePickerStyle())
-                Button(action: { interactor.selectDate(date: Date()) }) {
+                Button(action: selectToday) {
                     Text("Select Today")
                 }
                 Spacer()
@@ -23,12 +22,12 @@ struct TasksSelectDateSheet: View {
             .navigationTitle("Select Date")
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    Button(action: interactor.hideSelectDateSheet) {
+                    Button(action: hide) {
                         Text("Cancel")
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { interactor.selectDate(date: date)}) {
+                    Button(action: selectDate) {
                         Text("Select")
                     }
                 }
@@ -37,5 +36,19 @@ struct TasksSelectDateSheet: View {
         .onAppear {
             date = viewModel.date
         }
+    }
+}
+
+extension TasksSelectDateSheet {
+    private func hide() {
+        viewModel.isSelectDateSheetVisible = false
+    }
+    
+    private func selectDate() {
+        viewModel.selectDate(date: date)
+    }
+    
+    private func selectToday() {
+        viewModel.selectDate(date: Date())
     }
 }

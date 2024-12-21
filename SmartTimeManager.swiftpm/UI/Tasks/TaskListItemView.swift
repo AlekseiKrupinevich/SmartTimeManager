@@ -1,12 +1,12 @@
 import SwiftUI
 
-struct TaskListItemView: View {
-    @EnvironmentObject private var interactor: TasksInteractor
+struct TaskListItemView<DI: DIProtocol>: View {
     let itemViewModel: TaskListItemViewModel
+    @EnvironmentObject private var viewModel: TasksViewModel<DI>
     
     var body: some View {
         HStack(spacing: 5) {
-            Button(action: { interactor.toggleTaskCompletion(id: itemViewModel.id) }) {
+            Button(action: toggleCompletion) {
                 ZStack(alignment: .center) {
                     Image(systemName: "circle")
                         .font(.system(size: 18, weight: .light))
@@ -23,5 +23,11 @@ struct TaskListItemView: View {
                 .fontWeight(itemViewModel.isCompleted ? .light : .regular)
                 .opacity(itemViewModel.isCompleted ? 0.5 : 1)
         }
+    }
+}
+
+extension TaskListItemView {
+    private func toggleCompletion() {
+        viewModel.toggleTaskCompletion(id: itemViewModel.id)
     }
 }

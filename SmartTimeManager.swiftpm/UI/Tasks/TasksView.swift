@@ -1,27 +1,29 @@
 import SwiftUI
 
-struct TasksView: View {
-    @EnvironmentObject private var viewModel: TasksViewModel
-    @EnvironmentObject private var interactor: TasksInteractor
+struct TasksView<DI: DIProtocol>: View {
+    @StateObject private var viewModel = TasksViewModel<DI>()
+    @EnvironmentObject private var interactor: DI.TasksInteractorType
+    @EnvironmentObject private var appState: AppState
     
     var body: some View {
         NavigationView {
-            TaskListView()
+            TaskListView<DI>()
                 .navigationTitle("Tasks")
                 .toolbar {
                     ToolbarItemGroup(placement: .navigationBarLeading) {
-                        Button(action: interactor.showPreviousDay) {
+                        Button(action: viewModel.showPreviousDay) {
                             Image(systemName: "arrowtriangle.left")
                         }
-                        Button(action: interactor.showSelectDateSheet) {
+                        Button(action: showSelectDateSheet) {
                             Text(viewModel.date.string)
+                                .monospaced()
                         }
-                        Button(action: interactor.showNextDay) {
+                        Button(action: viewModel.showNextDay) {
                             Image(systemName: "arrowtriangle.right")
                         }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: interactor.showAddTaskSheet) {
+                        Button(action: showAddTaskSheet) {
                             Image(systemName: "plus")
                         }
                     }
@@ -29,10 +31,31 @@ struct TasksView: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .sheet(isPresented: $viewModel.isSelectDateSheetVisible) {
-            TasksSelectDateSheet()
+            TasksSelectDateSheet<DI>()
         }
         .sheet(isPresented: $viewModel.isAddTaskSheetVisible) {
-            AddTaskSheet(date: viewModel.date)
+            AddTaskSheet<DI>(date: viewModel.date)
         }
+        .environmentObject(viewModel)
+        .onAppear {
+            viewModel.interactor = interactor
+            viewModel.update()
+        }
+        .onReceive(interactor.objectWillChange) { _ in
+            viewModel.update()
+        }
+        .onReceive(appState.didBecomeActiveNotification) { _ in
+            viewModel.swithToNewDayIfNeeded()
+        }
+    }
+}
+
+extension TasksView {
+    private func showSelectDateSheet() {
+        viewModel.isSelectDateSheetVisible = true
+    }
+    
+    private func showAddTaskSheet() {
+        viewModel.isAddTaskSheetVisible = true
     }
 }

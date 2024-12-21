@@ -1,39 +1,48 @@
-enum DI {
-    typealias BuildResult = (
+import SwiftUI
+
+protocol DIProtocol {
+    associatedtype TasksInteractorType: TasksInteractor
+}
+
+class DIContainer<DI: DIProtocol>: ObservableObject {
+    @Published var appState: AppState
+    @Published var tasksInteractor: DI.TasksInteractorType
+    
+    init(
         appState: AppState,
-        tasksViewModel: TasksViewModel,
-        tasksInteractor: TasksInteractor
-    )
-    
-    static func build() -> BuildResult {
-        mock()
+        tasksInteractor: DI.TasksInteractorType
+    ) {
+        _appState = .init(wrappedValue: appState)
+        _tasksInteractor = .init(wrappedValue: tasksInteractor)
     }
-    
-    private static func real() -> BuildResult {
-        let tasksViewModel = TasksViewModel()
-        let tasksRepository = RealTasksRepository()
-        let tasksInteractor = TasksInteractor(
-            viewModel: tasksViewModel,
-            tasksRepository: tasksRepository)
-        let appState = AppState(tasksInteractor: tasksInteractor)
-        return (
-            appState,
-            tasksViewModel,
-            tasksInteractor
+}
+
+struct MockDI: DIProtocol {
+    typealias TasksInteractorType = MockTasksInteractor
+}
+
+struct RealDI: DIProtocol {
+    typealias TasksInteractorType = RealTasksInteractor
+}
+
+enum DIBuilder {
+    static func build() -> DIContainer<MockDI> {
+        let appState = AppState()
+        let tasksRepository = MockTasksRepository()
+        let tasksInteractor = MockDI.TasksInteractorType(repository: tasksRepository)
+        return DIContainer(
+            appState: appState, 
+            tasksInteractor: tasksInteractor
         )
     }
     
-    private static func mock() -> BuildResult {
-        let tasksViewModel = TasksViewModel()
-        let tasksRepository = MockTasksRepository()
-        let tasksInteractor = TasksInteractor(
-            viewModel: tasksViewModel,
-            tasksRepository: tasksRepository)
-        let appState = AppState(tasksInteractor: tasksInteractor)
-        return (
-            appState,
-            tasksViewModel,
-            tasksInteractor
+    static func build() -> DIContainer<RealDI> {
+        let appState = AppState()
+        let tasksRepository = RealTasksRepository()
+        let tasksInteractor = RealDI.TasksInteractorType(repository: tasksRepository)
+        return DIContainer(
+            appState: appState, 
+            tasksInteractor: tasksInteractor
         )
     }
 }

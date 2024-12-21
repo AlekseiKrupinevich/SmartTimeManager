@@ -1,9 +1,9 @@
 import SwiftUI
 
-struct ContentView: View {
+struct ContentView<DI: DIProtocol>: View {
     var body: some View {
         TabView {
-            TasksView()
+            TasksView<DI>()
                 .tabItem {
                     Label("Tasks", systemImage: "list.bullet")
                 }
