@@ -1,3 +1,5 @@
+import CoreDataWrapper
+
 class RealTasksRepository: TasksRepository {
     func tasks() -> [TaskModel] {
         []
@@ -21,5 +23,9 @@ class RealTasksRepository: TasksRepository {
     
     func subscribe(onUpdate: @escaping () -> Void) {
         
+    }
+    
+    @MainActor private func testCoreDataWrapper() {
+        let _ = CoreDataWrapper.viewContext
     }
 }

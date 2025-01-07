@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24C101" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+    <entity name="DayReport" representedClassName="DayReport" syncable="YES" codeGenerationType="class">
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="MonthReport" representedClassName="MonthReport" syncable="YES" codeGenerationType="class">
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="Task" representedClassName="Task" syncable="YES" codeGenerationType="class">
+        <attribute name="createDate" attributeType="Date" defaultDateTimeInterval="-31633200" usesScalarValueType="NO"/>
+        <attribute name="descr" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="String"/>
+        <relationship name="completionConditions" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="TaskCompletionConditions" inverseName="task" inverseEntity="TaskCompletionConditions"/>
+        <relationship name="notification" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="TaskNotification" inverseName="task" inverseEntity="TaskNotification"/>
+        <relationship name="states" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TaskState" inverseName="task" inverseEntity="TaskState"/>
+    </entity>
+    <entity name="TaskCompletionConditions" representedClassName="TaskCompletionConditions" syncable="YES" codeGenerationType="class">
+        <attribute name="oneTimeCarryOver" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="oneTimeDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="periodFrom" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="periodicType" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="periodTo" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="points" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="task" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Task" inverseName="completionConditions" inverseEntity="Task"/>
+    </entity>
+    <entity name="TaskNotification" representedClassName="TaskNotification" syncable="YES" codeGenerationType="class">
+        <attribute name="identifiers" optional="YES" attributeType="String"/>
+        <attribute name="time" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="task" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Task" inverseName="notification" inverseEntity="Task"/>
+    </entity>
+    <entity name="TaskState" representedClassName="TaskState" syncable="YES" codeGenerationType="class">
+        <attribute name="associatedDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="complated" optional="YES" attributeType="Boolean" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="task" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Task" inverseName="states" inverseEntity="Task"/>
+    </entity>
+</model>

@@ -1,24 +1,19 @@
-//
-//  PersistenceController.swift
-//  SmartTimeManager
-//
-//  Created by ALEXEY KRUPINEVICH on 01.03.2021.
-//
-
 import CoreData
 
-struct PersistenceController {
-    static private let shared = PersistenceController()
+@available(iOS 15.0, *)
+@available(macOS 13.0, *)
+public struct CoreDataWrapper {
+    @MainActor static let shared = CoreDataWrapper()
     
-    static private var viewContext: NSManagedObjectContext {
-        return PersistenceController.shared.container.viewContext
+    @MainActor public static var viewContext: NSManagedObjectContext {
+        return Self.shared.container.viewContext
     }
     
     private let container: NSPersistentCloudKitContainer
     
     private init() {
         container = NSPersistentCloudKitContainer(name: "CoreDataModel")
-        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        container.viewContext.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
         
         let description = container.persistentStoreDescriptions.first
         description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
