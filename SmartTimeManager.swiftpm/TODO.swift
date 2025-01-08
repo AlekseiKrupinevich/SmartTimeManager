@@ -3,12 +3,13 @@
  ver. 1.4
  – Implement RealTasksRepository
  – Implement Reports
- – Implement data migration from the previous version: from Core Data to Swift Data
  – Implement Settings
  – Configure icon, bundle, etc.
  
  ver. 1.5
+ – Implement reorder feature
  – Refactor EditTaskView
+ – Use Swift Data instead of Core Data
  – Implement notifications
  – Redesign
  
