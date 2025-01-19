@@ -114,12 +114,14 @@ struct CoreDataWrapper {
                 completionConditions.periodFrom = on.startDate
                 completionConditions.periodTo = on.endDate
             case .off:
-                break
+                completionConditions.periodFrom = nil
+                completionConditions.periodTo = nil
             }
             
             switch periodic.type {
             case .everyday:
                 completionConditions.periodicType = 4
+                completionConditions.points = ""
             case .weekly(let days):
                 completionConditions.periodicType = 1
                 completionConditions.points = Array(days)
@@ -134,6 +136,7 @@ struct CoreDataWrapper {
                     .joined(separator: ",")
             case .lastDayOfMonth:
                 completionConditions.periodicType = 3
+                completionConditions.points = ""
             }
         }
         
