@@ -2,10 +2,13 @@ import SwiftUI
 
 struct EditTaskView: View {
     @Binding var task: TaskModel
+    let needFocusOnTitle: Bool
+    @FocusState private var focused
     
     var body: some View {
         List {
             title
+                .focused($focused)
             notes
             typePicker
             switch task.type {
@@ -27,6 +30,11 @@ struct EditTaskView: View {
             }
         }
         .listStyle(PlainListStyle())
+        .onAppear {
+            if needFocusOnTitle {
+                focused = true
+            }
+        }
     }
     
     private var title: some View {

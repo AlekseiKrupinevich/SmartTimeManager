@@ -15,7 +15,7 @@ struct TaskDetailView<DI: DIProtocol>: View {
     }
     
     var body: some View {
-        EditTaskView(task: $task)
+        EditTaskView(task: $task, needFocusOnTitle: false)
             .navigationTitle("Task")
             .toolbar {
                 if isTaskModified {

@@ -13,7 +13,7 @@ struct AddTaskSheet<DI: DIProtocol>: View {
     
     var body: some View {
         NavigationView {
-            EditTaskView(task: $task)
+            EditTaskView(task: $task, needFocusOnTitle: true)
                 .navigationTitle("Add Task")
                 .toolbar {
                     ToolbarItemGroup(placement: .cancellationAction) {
