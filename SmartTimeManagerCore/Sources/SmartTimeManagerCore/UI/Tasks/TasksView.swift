@@ -11,7 +11,7 @@ struct TasksView<DI: DIProtocol>: View {
             TaskListView<DI>()
                 .navigationTitle("Tasks")
                 .toolbar {
-                    ToolbarItemGroup(placement: leadingToolbarPlacement) {
+                    ToolbarItemGroup(placement: .topBarLeading) {
                         Button(action: viewModel.showPreviousDay) {
                             Image(systemName: "arrowtriangle.left")
                         }
@@ -28,14 +28,14 @@ struct TasksView<DI: DIProtocol>: View {
                             Image(systemName: "arrowtriangle.right")
                         }
                     }
-                    ToolbarItem(placement: trailingToolbarPlacement) {
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button(action: showAddTaskSheet) {
                             Image(systemName: "plus")
                         }
                     }
                 }
         }
-        .navigationViewStyle(navigationViewStyle)
+        .navigationViewStyle(StackNavigationViewStyle())
         .sheet(isPresented: $viewModel.isSelectDateSheetVisible) {
             TasksSelectDateSheet<DI>()
         }
@@ -53,30 +53,6 @@ struct TasksView<DI: DIProtocol>: View {
         .onReceive(appState.didBecomeActiveNotification) { _ in
             viewModel.swithToNewDayIfNeeded()
         }
-    }
-    
-    private var leadingToolbarPlacement: ToolbarItemPlacement {
-#if canImport(UIKit)
-        return ToolbarItemPlacement.topBarLeading
-#else
-        return ToolbarItemPlacement.automatic
-#endif
-    }
-    
-    private var trailingToolbarPlacement: ToolbarItemPlacement {
-#if canImport(UIKit)
-        return ToolbarItemPlacement.topBarTrailing
-#else
-        return ToolbarItemPlacement.automatic
-#endif
-    }
-    
-    private var navigationViewStyle: some NavigationViewStyle {
-#if canImport(UIKit)
-        return StackNavigationViewStyle()
-#else
-        return DefaultNavigationViewStyle()
-#endif
     }
 }
 
