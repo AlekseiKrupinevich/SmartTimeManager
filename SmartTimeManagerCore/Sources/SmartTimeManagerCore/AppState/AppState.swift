@@ -5,5 +5,7 @@ class AppState: ObservableObject {
     
     func appDidFinishLaunching() { }
     
-    func appDidBecomeActive() { }
+    func appDidBecomeActive() {
+        CoreDataWrapper.update()
+    }
 }

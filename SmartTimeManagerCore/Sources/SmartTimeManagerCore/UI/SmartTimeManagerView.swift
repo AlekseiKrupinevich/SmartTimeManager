@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct SmartTimeManagerView: View {
-    private typealias DI = MockDI
+    private typealias DI = RealDI
     
     @StateObject private var diContainer: DIContainer<DI> = DIBuilder.build()
     

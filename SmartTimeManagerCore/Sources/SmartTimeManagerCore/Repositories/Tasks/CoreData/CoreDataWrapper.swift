@@ -46,6 +46,10 @@ struct CoreDataWrapper {
         return container.viewContext
     }
     
+    static func update() {
+        viewContext.refreshAllObjects()
+    }
+    
     static func task(id: String) -> Task? {
         let request = NSFetchRequest<Task>(entityName: "Task")
         request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
