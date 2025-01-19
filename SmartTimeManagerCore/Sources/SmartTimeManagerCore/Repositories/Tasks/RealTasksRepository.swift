@@ -28,7 +28,7 @@ class RealTasksRepository: TasksRepository {
     private func convert(task: Task) -> TaskModel {
         let type: TaskModel.TaskType = {
             guard let completionConditions = task.completionConditions else {
-                return .oneTime(.init(date: Date().withoutTime))
+                return .oneTime(.init(date: (task.createDate ?? Date()).withoutTime))
             }
             switch completionConditions.type {
             case 2:
@@ -64,10 +64,9 @@ class RealTasksRepository: TasksRepository {
                 
                 return .periodic(.init(timeFrame: timeFrame, type: type))
             default:
-                // TODO: Decide what to do with CarryOver
-                // taskModel.oneTimeCarryOver = task?.completionConditions?.oneTimeCarryOver ?? false
-                let date = task.completionConditions?.oneTimeDate ?? Date().withoutTime
-                return .oneTime(.init(date: date))
+                let date = task.completionConditions?.oneTimeDate?.withoutTime ?? Date().withoutTime
+                let carryOver = task.completionConditions?.oneTimeCarryOver ?? false
+                return .oneTime(.init(date: date, carryOver: carryOver))
             }
         }()
         

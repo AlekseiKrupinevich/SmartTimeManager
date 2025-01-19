@@ -13,6 +13,12 @@ struct TaskModel {
         
         struct OneTime {
             var date: Date
+            let carryOver: Bool
+            
+            init(date: Date, carryOver: Bool = true) {
+                self.date = date
+                self.carryOver = carryOver
+            }
         }
         
         struct Periodic {

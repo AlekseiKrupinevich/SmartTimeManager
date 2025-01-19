@@ -17,7 +17,17 @@ extension TaskModel {
     func isOccurring(on date: Date) -> Bool {
         switch type {
         case .oneTime(let oneTime):
-            return oneTime.date == date
+            if oneTime.date == date {
+                return true
+            } else if oneTime.carryOver {
+                if !completionDates.isEmpty {
+                    return completionDates.contains(date)
+                } else {
+                    return oneTime.date <= date && date.withoutTime <= Date().withoutTime
+                }
+            } else {
+                return false
+            }
         case .periodic(let periodic):
             switch periodic.timeFrame {
             case .off:
