@@ -1,12 +1,16 @@
 import Foundation
 
 class RealTasksRepository: TasksRepository {
+    private var subscriptions: [() -> Void] = []
+    
     func tasks() -> [TaskModel] {
-        return CoreDataWrapper.tasks().compactMap { convert(task: $0) }
+        return CoreDataWrapper.tasks()
+            .compactMap { convert(task: $0) }
     }
     
     func task(id: String) -> TaskModel? {
-        return CoreDataWrapper.task(id: id).flatMap { convert(task: $0) }
+        return CoreDataWrapper.task(id: id)
+            .flatMap { convert(task: $0) }
     }
     
     func add(task: TaskModel) {
@@ -22,7 +26,26 @@ class RealTasksRepository: TasksRepository {
     }
     
     func subscribe(onUpdate: @escaping () -> Void) {
-        // TODO: priority 2
+        subscriptions.append(onUpdate)
+    }
+    
+    init() {
+        CoreDataWrapper.subscribeOnUpdates(
+            self,
+            selector: #selector(handleRemoteChange)
+        )
+    }
+    
+    deinit {
+        CoreDataWrapper.unsubscribe(self)
+    }
+    
+    @objc private func handleRemoteChange() {
+        for subscription in subscriptions {
+            DispatchQueue.main.async {
+                subscription()
+            }
+        }
     }
     
     private func convert(task: Task) -> TaskModel? {
@@ -51,10 +74,14 @@ class RealTasksRepository: TasksRepository {
                 let type: TaskModel.TaskType.Periodic.PeriodType = {
                     switch completionConditions.periodicType {
                     case 1:
-                        let days = (completionConditions.points ?? "").split(separator: ",").compactMap { Int($0) }
+                        let days = (completionConditions.points ?? "")
+                            .split(separator: ",")
+                            .compactMap { Int($0) }
                         return .weekly(Set(days))
                     case 2:
-                        let days = (completionConditions.points ?? "").split(separator: ",").compactMap { Int($0) }
+                        let days = (completionConditions.points ?? "")
+                            .split(separator: ",")
+                            .compactMap { Int($0) }
                         return .monthly(Set(days))
                     case 3:
                         return .lastDayOfMonth

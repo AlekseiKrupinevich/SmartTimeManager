@@ -15,8 +15,15 @@ struct CoreDataWrapper {
         container.viewContext.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
         
         let description = container.persistentStoreDescriptions.first
-        description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        description?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        
+        description?.setOption(
+            true as NSNumber,
+            forKey: NSPersistentHistoryTrackingKey
+        )
+        description?.setOption(
+            true as NSNumber,
+            forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey
+        )
         
         container.loadPersistentStores() { storeDescription, error in
             if let error = error as NSError? {
@@ -51,5 +58,18 @@ struct CoreDataWrapper {
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.createDate, ascending: true)]
         let fetchResult = try? viewContext.fetch(request)
         return fetchResult ?? []
+    }
+    
+    static func subscribeOnUpdates(_ subscriber: Any, selector: Selector) {
+        NotificationCenter.default.addObserver(
+            subscriber,
+            selector: selector,
+            name: NSNotification.Name.NSPersistentStoreRemoteChange,
+            object: container.persistentStoreCoordinator
+        )
+    }
+    
+    static func unsubscribe(_ subscriber: Any) {
+        NotificationCenter.default.removeObserver(subscriber)
     }
 }

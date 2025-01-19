@@ -5,9 +5,9 @@ class RealTasksInteractor: TasksInteractor {
     
     init(repository: any TasksRepository) {
         self.repository = repository
-        repository.subscribe(onUpdate: { [weak self] in
+        repository.subscribe { [weak self] in
             self?.objectWillChange.send()
-        })
+        }
     }
     
     func tasks(on date: Date) -> [TaskModel] {
