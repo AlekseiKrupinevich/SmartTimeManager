@@ -72,4 +72,93 @@ struct CoreDataWrapper {
     static func unsubscribe(_ subscriber: Any) {
         NotificationCenter.default.removeObserver(subscriber)
     }
+    
+    static func add(_ taskModel: TaskModel) {
+        let task = Task(context: viewContext)
+        task.uuid = taskModel.id
+        task.createDate = Date()
+        updateTask(task, taskModel: taskModel)
+    }
+    
+    static func update(_ taskModel: TaskModel) {
+        guard let task = task(id: taskModel.id) else {
+            return
+        }
+        updateTask(task, taskModel: taskModel)
+    }
+    
+    static func updateTask(_ task: Task, taskModel: TaskModel) {
+        task.name = taskModel.title
+        task.descr = taskModel.notes
+        
+        let completionConditions: TaskCompletionConditions = {
+            if let completionConditions = task.completionConditions {
+                return completionConditions
+            } else {
+                let completionConditions = TaskCompletionConditions(context: viewContext)
+                task.completionConditions = completionConditions
+                return completionConditions
+            }
+        }()
+        
+        switch taskModel.type {
+        case .oneTime(let oneTime):
+            completionConditions.type = 1
+            completionConditions.oneTimeDate = oneTime.date
+            completionConditions.oneTimeCarryOver = oneTime.carryOver
+        case .periodic(let periodic):
+            completionConditions.type = 2
+            
+            switch periodic.timeFrame {
+            case .on(let on):
+                completionConditions.periodFrom = on.startDate
+                completionConditions.periodTo = on.endDate
+            case .off:
+                break
+            }
+            
+            switch periodic.type {
+            case .everyday:
+                completionConditions.periodicType = 4
+            case .weekly(let days):
+                completionConditions.periodicType = 1
+                completionConditions.points = Array(days)
+                    .sorted()
+                    .map { String($0) }
+                    .joined(separator: ",")
+            case .monthly(let days):
+                completionConditions.periodicType = 2
+                completionConditions.points = Array(days)
+                    .sorted()
+                    .map { String($0) }
+                    .joined(separator: ",")
+            case .lastDayOfMonth:
+                completionConditions.periodicType = 3
+            }
+        }
+        
+        let states: Set<TaskState> = (task.states as? Set<TaskState>) ?? []
+        
+        task.states = NSSet(array: taskModel.completionDates.map { date in
+            let state: TaskState
+            if let _state = states.first(where: { $0.associatedDate == date }) {
+                state = _state
+            } else {
+                state = TaskState(context: viewContext)
+                state.associatedDate = date
+            }
+            state.complated = true
+            return state
+        })
+        
+        try? viewContext.save()
+    }
+    
+    static func deleteTask(id: String) {
+        guard let task = task(id: id) else {
+            return
+        }
+        viewContext.delete(task)
+        try? viewContext.save()
+    }
 }

@@ -14,15 +14,15 @@ class RealTasksRepository: TasksRepository {
     }
     
     func add(task: TaskModel) {
-        // TODO: priority 3
+        CoreDataWrapper.add(task)
     }
     
     func update(task: TaskModel) {
-        // TODO: priority 3
+        CoreDataWrapper.update(task)
     }
     
     func deleteTask(id: String) {
-        // TODO: priority 3
+        CoreDataWrapper.deleteTask(id: id)
     }
     
     func subscribe(onUpdate: @escaping () -> Void) {
