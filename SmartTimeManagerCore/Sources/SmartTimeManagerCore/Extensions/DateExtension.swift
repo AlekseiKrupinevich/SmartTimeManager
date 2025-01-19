@@ -21,6 +21,13 @@ extension Date {
         return dateFormatter.string(from: self)
     }
     
+    var shortString: String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale.current
+        dateFormatter.setLocalizedDateFormatFromTemplate("EddMMM")
+        return dateFormatter.string(from: self)
+    }
+    
     var previousDay: Date {
         var components = self.components
         components.day = (components.day ?? 0) - 1

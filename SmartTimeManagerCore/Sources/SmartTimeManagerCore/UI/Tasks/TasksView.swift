@@ -4,6 +4,7 @@ struct TasksView<DI: DIProtocol>: View {
     @StateObject private var viewModel = TasksViewModel<DI>()
     @EnvironmentObject private var interactor: DI.TasksInteractorType
     @EnvironmentObject private var appState: AppState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
     var body: some View {
         NavigationView {
@@ -15,8 +16,13 @@ struct TasksView<DI: DIProtocol>: View {
                             Image(systemName: "arrowtriangle.left")
                         }
                         Button(action: showSelectDateSheet) {
-                            Text(viewModel.date.string)
-                                .monospaced()
+                            switch horizontalSizeClass {
+                            case .regular:
+                                Text(viewModel.date.shortString)
+                            case .compact, nil:
+                                Text(viewModel.date.string)
+                                    .monospaced()
+                            }
                         }
                         Button(action: viewModel.showNextDay) {
                             Image(systemName: "arrowtriangle.right")

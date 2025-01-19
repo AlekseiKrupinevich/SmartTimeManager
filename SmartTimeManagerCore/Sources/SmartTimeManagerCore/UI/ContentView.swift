@@ -8,6 +8,10 @@ struct ContentView<DI: DIProtocol>: View {
                     Label("Tasks", systemImage: "list.bullet")
                 }
             Spacer()
+                .tabItem {
+                    Label("Reports", systemImage: "text.page")
+                }
+            Spacer()
                 .tabItem { 
                     Label("Settings", systemImage: "gearshape")
                 }
