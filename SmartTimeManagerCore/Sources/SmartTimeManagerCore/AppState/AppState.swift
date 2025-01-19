@@ -6,6 +6,7 @@ class AppState: ObservableObject {
     func appDidFinishLaunching() { }
     
     func appDidBecomeActive() {
+        // TODO: Not sure, if it works
         CoreDataWrapper.update()
     }
 }

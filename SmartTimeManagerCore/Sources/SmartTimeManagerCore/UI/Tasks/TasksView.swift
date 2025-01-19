@@ -16,12 +16,11 @@ struct TasksView<DI: DIProtocol>: View {
                             Image(systemName: "arrowtriangle.left")
                         }
                         Button(action: showSelectDateSheet) {
-                            switch horizontalSizeClass {
-                            case .regular:
-                                Text(viewModel.date.shortString)
-                            case .compact, nil:
+                            if isMac || horizontalSizeClass == .compact {
                                 Text(viewModel.date.string)
                                     .monospaced()
+                            } else {
+                                Text(viewModel.date.shortString)
                             }
                         }
                         Button(action: viewModel.showNextDay) {
