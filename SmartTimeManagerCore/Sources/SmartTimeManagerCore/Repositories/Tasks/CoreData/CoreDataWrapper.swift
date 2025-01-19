@@ -1,10 +1,17 @@
 import CoreData
 
-@available(iOS 15.0, *)
-@available(macOS 13.0, *)
-public struct CoreDataWrapper {
+struct CoreDataWrapper {
     private nonisolated(unsafe) static var container: NSPersistentCloudKitContainer = {
-        let container = NSPersistentCloudKitContainer(name: "CoreDataModel")
+        guard let url = Bundle.module.url(forResource:"CoreDataModel", withExtension: "momd") else {
+            fatalError("Couldn't find CoreDataModel")
+        }
+        guard let managedObjectModel = NSManagedObjectModel(contentsOf: url) else {
+            fatalError("Coundn't load managed object model")
+        }
+        let container = NSPersistentCloudKitContainer(
+            name: "CoreDataModel",
+            managedObjectModel: managedObjectModel
+        )
         container.viewContext.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
         
         let description = container.persistentStoreDescriptions.first
@@ -32,14 +39,14 @@ public struct CoreDataWrapper {
         return container.viewContext
     }
     
-    public static func task(id: String) -> Task? {
+    static func task(id: String) -> Task? {
         let request = NSFetchRequest<Task>(entityName: "Task")
         request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
         let fetchResult = try? viewContext.fetch(request)
         return fetchResult?.first
     }
     
-    public static func tasks() -> [Task] {
+    static func tasks() -> [Task] {
         let request = NSFetchRequest<Task>(entityName: "Task")
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.createDate, ascending: true)]
         let fetchResult = try? viewContext.fetch(request)

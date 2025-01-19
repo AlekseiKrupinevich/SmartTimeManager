@@ -19,12 +19,12 @@ struct TaskDetailView<DI: DIProtocol>: View {
             .navigationTitle("Task")
             .toolbar {
                 if isTaskModified {
-                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                    ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: cancel) {
                             Text("Cancel")
                         }
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .confirmationAction) {
                         Button(action: save) {
                             Text("Save")
                         }

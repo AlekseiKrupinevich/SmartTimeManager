@@ -21,12 +21,12 @@ struct TasksSelectDateSheet<DI: DIProtocol>: View {
             .padding(5)
             .navigationTitle("Select Date")
             .toolbar {
-                ToolbarItemGroup(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .cancellationAction) {
                     Button(action: hide) {
                         Text("Cancel")
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button(action: selectDate) {
                         Text("Select")
                     }

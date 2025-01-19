@@ -1,5 +1,4 @@
 import Foundation
-import CoreDataWrapper
 
 class RealTasksRepository: TasksRepository {
     func tasks() -> [TaskModel] {

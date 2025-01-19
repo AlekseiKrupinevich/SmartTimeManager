@@ -16,12 +16,12 @@ struct AddTaskSheet<DI: DIProtocol>: View {
             EditTaskView(task: $task)
                 .navigationTitle("Add Task")
                 .toolbar {
-                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                    ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: hide) {
                             Text("Cancel")
                         }
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: .confirmationAction) {
                         Button(action: add) {
                             Text("Add")
                         }

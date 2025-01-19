@@ -10,7 +10,7 @@ struct TasksView<DI: DIProtocol>: View {
             TaskListView<DI>()
                 .navigationTitle("Tasks")
                 .toolbar {
-                    ToolbarItemGroup(placement: .navigationBarLeading) {
+                    ToolbarItemGroup(placement: leadingToolbarPlacement) {
                         Button(action: viewModel.showPreviousDay) {
                             Image(systemName: "arrowtriangle.left")
                         }
@@ -22,14 +22,14 @@ struct TasksView<DI: DIProtocol>: View {
                             Image(systemName: "arrowtriangle.right")
                         }
                     }
-                    ToolbarItem(placement: .navigationBarTrailing) {
+                    ToolbarItem(placement: trailingToolbarPlacement) {
                         Button(action: showAddTaskSheet) {
                             Image(systemName: "plus")
                         }
                     }
                 }
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        .navigationViewStyle(navigationViewStyle)
         .sheet(isPresented: $viewModel.isSelectDateSheetVisible) {
             TasksSelectDateSheet<DI>()
         }
@@ -47,6 +47,30 @@ struct TasksView<DI: DIProtocol>: View {
         .onReceive(appState.didBecomeActiveNotification) { _ in
             viewModel.swithToNewDayIfNeeded()
         }
+    }
+    
+    private var leadingToolbarPlacement: ToolbarItemPlacement {
+#if canImport(UIKit)
+        return ToolbarItemPlacement.topBarLeading
+#else
+        return ToolbarItemPlacement.automatic
+#endif
+    }
+    
+    private var trailingToolbarPlacement: ToolbarItemPlacement {
+#if canImport(UIKit)
+        return ToolbarItemPlacement.topBarTrailing
+#else
+        return ToolbarItemPlacement.automatic
+#endif
+    }
+    
+    private var navigationViewStyle: some NavigationViewStyle {
+#if canImport(UIKit)
+        return StackNavigationViewStyle()
+#else
+        return DefaultNavigationViewStyle()
+#endif
     }
 }
 
