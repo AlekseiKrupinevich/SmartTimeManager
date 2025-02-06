@@ -1,8 +1,6 @@
 /*
  
  ver. 1.4
- – Implement RealTasksRepository
- – Fix iPad and Mac layout (UI/UX)
  – Implement Reports
  – Implement Settings
  – Configure icon, bundle, etc.

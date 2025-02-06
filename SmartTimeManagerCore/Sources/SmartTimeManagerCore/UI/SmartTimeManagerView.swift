@@ -1,13 +1,9 @@
 import SwiftUI
 
-public struct SmartTimeManagerView: View {
-    private typealias DI = RealDI
+struct SmartTimeManagerView<DI: DIProtocol>: View {
+    @StateObject private var diContainer: DIContainer<DI> = DIBuilder<DI>.build()
     
-    @StateObject private var diContainer: DIContainer<DI> = DIBuilder.build()
-    
-    public init() {}
-    
-    public var body: some View {
+    var body: some View {
         ContentView<DI>()
             .environmentObject(diContainer.appState)
             .environmentObject(diContainer.tasksInteractor)
@@ -18,4 +14,8 @@ public struct SmartTimeManagerView: View {
                 diContainer.appState.appDidBecomeActive()
             }
     }
+}
+
+#Preview {
+    SmartTimeManagerView<MockDI>()
 }

@@ -9,7 +9,7 @@ struct ContentView<DI: DIProtocol>: View {
                 }
             Spacer()
                 .tabItem {
-                    Label("Reports", systemImage: "text.page")
+                    Label("Notes", systemImage: "note.text")
                 }
             Spacer()
                 .tabItem { 

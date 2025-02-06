@@ -5,7 +5,7 @@ import SmartTimeManagerCore
 struct SmartTimeManager: App {
     var body: some Scene {
         WindowGroup {
-            SmartTimeManagerView()
+            SmartTimeManagerCoreView()
         }
     }
 }
