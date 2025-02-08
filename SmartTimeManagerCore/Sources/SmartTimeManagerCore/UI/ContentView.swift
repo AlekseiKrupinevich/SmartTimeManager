@@ -7,7 +7,7 @@ struct ContentView<DI: DIProtocol>: View {
                 .tabItem {
                     Label("Tasks", systemImage: "list.bullet")
                 }
-            Spacer()
+            NotesView<DI>()
                 .tabItem {
                     Label("Notes", systemImage: "note.text")
                 }

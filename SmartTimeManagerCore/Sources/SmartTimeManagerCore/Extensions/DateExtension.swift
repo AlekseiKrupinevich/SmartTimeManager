@@ -15,16 +15,17 @@ extension Date {
     }
     
     var string: String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale.current
-        dateFormatter.setLocalizedDateFormatFromTemplate("EddMMMyyy")
-        return dateFormatter.string(from: self)
+        string(template: "EddMMMyyy")
     }
     
     var shortString: String {
+        string(template: "EddMMM")
+    }
+    
+    func string(template: String) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale.current
-        dateFormatter.setLocalizedDateFormatFromTemplate("EddMMM")
+        dateFormatter.setLocalizedDateFormatFromTemplate(template)
         return dateFormatter.string(from: self)
     }
     

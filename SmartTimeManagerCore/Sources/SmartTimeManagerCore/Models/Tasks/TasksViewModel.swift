@@ -47,11 +47,13 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject {
     
     func deleteTasks(_ indexSet: IndexSet) {
         indexSet
-            .forEach {
-                guard $0 < items.count else {
-                    return
+            .compactMap { index -> String? in
+                guard index < items.count else {
+                    return nil
                 }
-                let id = items[$0].id
+                return items[index].id
+            }
+            .forEach { id in
                 interactor?.deleteTask(id: id)
             }
     }

@@ -2,27 +2,33 @@ import SwiftUI
 
 protocol DIProtocol {
     associatedtype TasksInteractorType: TasksInteractor
+    associatedtype NotesInteractorType: NotesInteractor
 }
 
 class DIContainer<DI: DIProtocol>: ObservableObject {
     @Published var appState: AppState
     @Published var tasksInteractor: DI.TasksInteractorType
+    @Published var notesInteractor: DI.NotesInteractorType
     
     init(
         appState: AppState,
-        tasksInteractor: DI.TasksInteractorType
+        tasksInteractor: DI.TasksInteractorType,
+        notesInteractor: DI.NotesInteractorType
     ) {
         _appState = .init(wrappedValue: appState)
         _tasksInteractor = .init(wrappedValue: tasksInteractor)
+        _notesInteractor = .init(wrappedValue: notesInteractor)
     }
 }
 
 struct MockDI: DIProtocol {
     typealias TasksInteractorType = MockTasksInteractor
+    typealias NotesInteractorType = MockNotesInteractor
 }
 
 struct RealDI: DIProtocol {
     typealias TasksInteractorType = RealTasksInteractor
+    typealias NotesInteractorType = RealNotesInteractor
 }
 
 class DIBuilder<DI: DIProtocol> {
@@ -42,9 +48,12 @@ class DIBuilder<DI: DIProtocol> {
         let appState = AppState()
         let tasksRepository = RealTasksRepository()
         let tasksInteractor = RealDI.TasksInteractorType(repository: tasksRepository)
+        let notesRepository = RealNotesRepository()
+        let notesInteractor = RealDI.NotesInteractorType(repository: notesRepository)
         return DIContainer(
             appState: appState, 
-            tasksInteractor: tasksInteractor
+            tasksInteractor: tasksInteractor,
+            notesInteractor: notesInteractor
         )
     }
     
@@ -52,9 +61,12 @@ class DIBuilder<DI: DIProtocol> {
         let appState = AppState()
         let tasksRepository = MockTasksRepository()
         let tasksInteractor = MockDI.TasksInteractorType(repository: tasksRepository)
+        let notesRepository = MockNotesRepository()
+        let notesInteractor = MockDI.NotesInteractorType(repository: notesRepository)
         return DIContainer(
             appState: appState,
-            tasksInteractor: tasksInteractor
+            tasksInteractor: tasksInteractor,
+            notesInteractor: notesInteractor
         )
     }
 }

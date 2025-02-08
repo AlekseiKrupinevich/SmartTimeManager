@@ -7,6 +7,7 @@ struct SmartTimeManagerView<DI: DIProtocol>: View {
         ContentView<DI>()
             .environmentObject(diContainer.appState)
             .environmentObject(diContainer.tasksInteractor)
+            .environmentObject(diContainer.notesInteractor)
             .onAppear {
                 diContainer.appState.appDidFinishLaunching()
             }

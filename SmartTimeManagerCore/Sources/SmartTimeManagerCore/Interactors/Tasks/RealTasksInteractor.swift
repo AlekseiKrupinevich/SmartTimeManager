@@ -11,7 +11,7 @@ class RealTasksInteractor: TasksInteractor {
     }
     
     func tasks(on date: Date) -> [TaskModel] {
-        return repository.tasks()
+        repository.tasks()
             .filter { $0.isOccurring(on: date) }
     }
     
