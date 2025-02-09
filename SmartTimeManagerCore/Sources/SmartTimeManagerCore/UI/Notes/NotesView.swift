@@ -27,9 +27,9 @@ struct NotesView<DI: DIProtocol>: View {
 //        .sheet(isPresented: $viewModel.isApplyFiltersSheetVisible) {
 //            ApplyFiltersSheet<DI>()
 //        }
-//        .sheet(isPresented: $viewModel.isAddNoteSheetVisible) {
-//            AddNoteSheet<DI>()
-//        }
+        .sheet(isPresented: $viewModel.isAddNoteSheetVisible) {
+            AddNoteSheet<DI>()
+        }
         .environmentObject(viewModel)
         .onAppear {
             viewModel.interactor = interactor

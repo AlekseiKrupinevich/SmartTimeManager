@@ -1,20 +1,16 @@
 import SwiftUI
 
-struct AddTaskSheet<DI: DIProtocol>: View {
-    @EnvironmentObject private var viewModel: TasksViewModel<DI>
-    @EnvironmentObject private var interactor: DI.TasksInteractorType
-    @State private var task: TaskModel
+struct AddNoteSheet<DI: DIProtocol>: View {
+    @EnvironmentObject private var viewModel: NotesViewModel<DI>
+    @EnvironmentObject private var interactor: DI.NotesInteractorType
+    @State private var note = NoteModel()
     @State private var isAlertPresented = false
     @State private var alertTitle = ""
     
-    init(date: Date) {
-        _task = State<TaskModel>(initialValue: TaskModel(date: date))
-    }
-    
     var body: some View {
         NavigationView {
-            EditTaskView(task: $task, needFocusOnTitle: true)
-                .navigationTitle("Add Task")
+            EditNoteView(note: $note, needFocusOnText: true)
+                .navigationTitle("Add Note")
                 .toolbar {
                     ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: hide) {
@@ -33,15 +29,15 @@ struct AddTaskSheet<DI: DIProtocol>: View {
     }
 }
 
-extension AddTaskSheet {
+extension AddNoteSheet {
     private func hide() {
-        viewModel.isAddTaskSheetVisible = false
+        viewModel.isAddNoteSheetVisible = false
     }
     
     private func add() {
         do {
-            try interactor.validate(task)
-            interactor.add(task)
+            try interactor.validate(note)
+            interactor.add(note)
             hide()
         } catch {
             alertTitle = "\(error)"
