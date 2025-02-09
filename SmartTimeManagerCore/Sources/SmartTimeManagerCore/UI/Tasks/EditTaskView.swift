@@ -38,29 +38,11 @@ struct EditTaskView: View {
     }
     
     private var title: some View {
-        textEditor(text: $task.title, placeholder: "Title")
+        CustomTextEditor(text: $task.title, placeholder: "Title")
     }
     
     private var notes: some View {
-        textEditor(text: $task.notes, placeholder: "Notes")
-    }
-    
-    private func textEditor(text: Binding<String>, placeholder: String) -> some View {
-        ZStack(alignment: .topLeading) {
-            TextEditor(text: text)
-                .overlay(alignment: .topLeading) {
-                    Text(placeholder)
-                        .allowsHitTesting(false)
-                        .padding(.top, 8)
-                        .padding(.leading, 5)
-                        .foregroundColor(text.wrappedValue.isEmpty ? .secondary : .clear)
-                }
-            // MARK: It fixes TextEditor default height
-            Text(text.wrappedValue.isEmpty ? placeholder : text.wrappedValue)
-                .padding(EdgeInsets(top: 8, leading: 5, bottom: 10, trailing: 5))
-                .foregroundColor(.clear)
-                .allowsHitTesting(false)
-        }
+        CustomTextEditor(text: $task.notes, placeholder: "Notes")
     }
     
     private var typePicker: some View {

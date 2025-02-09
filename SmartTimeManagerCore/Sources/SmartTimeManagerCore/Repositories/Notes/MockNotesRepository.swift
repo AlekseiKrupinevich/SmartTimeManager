@@ -33,6 +33,21 @@ class MockNotesRepository: NotesRepository {
         _notes
     }
     
+    func note(id: String) -> NoteModel? {
+        _notes.first { $0.id == id }
+    }
+    
+    func add(note: NoteModel) {
+        _notes.insert(note, at: 0)
+    }
+    
+    func update(note: NoteModel) {
+        guard let index = _notes.firstIndex(where: { $0.id == note.id }) else {
+            return
+        }
+        _notes[index] = note
+    }
+    
     func deleteNote(id: String) {
         _notes.removeAll(where: { $0.id == id })
     }

@@ -10,8 +10,8 @@ struct TaskDetailView<DI: DIProtocol>: View {
     
     init(id: String) {
         let task = TaskModel(id: id)
-        _task = State<TaskModel>.init(initialValue: task)
-        _originalTask = State<TaskModel>.init(initialValue: task)
+        _task = State<TaskModel>(initialValue: task)
+        _originalTask = State<TaskModel>(initialValue: task)
     }
     
     var body: some View {
