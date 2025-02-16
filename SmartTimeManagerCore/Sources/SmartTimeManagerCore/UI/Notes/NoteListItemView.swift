@@ -8,13 +8,13 @@ struct NoteListItemView<DI: DIProtocol>: View {
         VStack(alignment: .leading, spacing: 5) {
             ScrollView(.horizontal) {
                 HStack(spacing: 5) {
-                    ForEach(itemViewModel.marks) { mark in
-                        Text(mark.text)
+                    ForEach(itemViewModel.tags) { tag in
+                        Text(tag.text)
                             .font(.callout)
                             .padding(.vertical, 2)
                             .padding(.horizontal, 6)
                             .foregroundStyle(.white)
-                            .background(mark.color)
+                            .background(tag.color)
                             .cornerRadius(6)
                     }
                 }

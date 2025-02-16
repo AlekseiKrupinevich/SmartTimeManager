@@ -1,11 +1,14 @@
 /*
  
  ver. 1.4
- – Implement Reports
- – Implement Settings
+ – Implement Notes
+   • Date Tags
+   • RealNotesRepository
+   • Notes' Filters
  – Configure icon, bundle, etc.
  
  ver. 1.5
+ – Implement Settings
  – Implement reorder feature
  – Refactor EditTaskView
  – Implement notifications

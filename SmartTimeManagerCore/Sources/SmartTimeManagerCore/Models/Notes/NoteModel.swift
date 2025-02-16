@@ -3,9 +3,9 @@ import SwiftUI
 struct NoteModel {
     let id: String
     var text: String
-    var marks: [Mark]
+    var tags: [Tag]
     
-    enum Mark {
+    enum Tag {
         case text((text: String, color: Color))
         case date((date: Date, template: String))
     }
@@ -13,10 +13,10 @@ struct NoteModel {
     init(
         id: String = UUID().uuidString,
         text: String = "",
-        marks: [Mark] = []
+        tags: [Tag] = []
     ) {
         self.id = id
         self.text = text
-        self.marks = marks
+        self.tags = tags
     }
 }

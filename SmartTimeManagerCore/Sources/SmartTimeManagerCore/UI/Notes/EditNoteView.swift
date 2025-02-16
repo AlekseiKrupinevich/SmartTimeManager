@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct EditNoteView: View {
+struct EditNoteView<DI: DIProtocol>: View {
     @Binding var note: NoteModel
     let needFocusOnText: Bool
     @FocusState private var focused
@@ -9,6 +9,7 @@ struct EditNoteView: View {
         List {
             text
                 .focused($focused)
+            NoteTagsView<DI>(note: $note)
         }
         .listStyle(PlainListStyle())
         .onAppear {

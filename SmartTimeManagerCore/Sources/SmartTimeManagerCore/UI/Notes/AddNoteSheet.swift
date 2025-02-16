@@ -9,7 +9,7 @@ struct AddNoteSheet<DI: DIProtocol>: View {
     
     var body: some View {
         NavigationView {
-            EditNoteView(note: $note, needFocusOnText: true)
+            EditNoteView<DI>(note: $note, needFocusOnText: true)
                 .navigationTitle("Add Note")
                 .toolbar {
                     ToolbarItemGroup(placement: .cancellationAction) {

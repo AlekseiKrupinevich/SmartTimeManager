@@ -15,7 +15,7 @@ struct NoteDetailView<DI: DIProtocol>: View {
     }
     
     var body: some View {
-        EditNoteView(note: $note, needFocusOnText: false)
+        EditNoteView<DI>(note: $note, needFocusOnText: false)
             .navigationTitle("Note")
             .toolbar {
                 if isNoteModified {

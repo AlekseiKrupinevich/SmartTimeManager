@@ -4,7 +4,7 @@ extension NoteModel {
     init() {
         id = UUID().uuidString
         text = ""
-        marks = []
+        tags = []
     }
     
     enum ValidationResult {
@@ -24,12 +24,12 @@ extension NoteModel: Equatable {
     static func == (lhs: NoteModel, rhs: NoteModel) -> Bool {
         lhs.id == rhs.id &&
         lhs.text == rhs.text &&
-        lhs.marks == rhs.marks
+        lhs.tags == rhs.tags
     }
 }
 
-extension NoteModel.Mark: Equatable {
-    static func == (lhs: NoteModel.Mark, rhs: NoteModel.Mark) -> Bool {
+extension NoteModel.Tag: Equatable {
+    static func == (lhs: NoteModel.Tag, rhs: NoteModel.Tag) -> Bool {
         switch (lhs, rhs) {
         case let (.text((lhsText, lhsColor)), .text((rhsText, rhsColor))):
             return lhsText == rhsText && lhsColor == rhsColor

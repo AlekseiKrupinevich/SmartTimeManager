@@ -16,15 +16,29 @@ class NotesViewModel<DI: DIProtocol>: ObservableObject {
             return .init(
                 id: note.id,
                 text: note.text,
-                marks: note.marks.map { mark in
-                    switch mark {
-                    case .text((let text, let color)):
-                        return .init(text: text, color: color)
-                    case .date((let date, let format)):
-                        let text = date.string(template: format)
-                        return .init(text: text, color: .gray)
+                tags: note.tags
+                    .sorted { lhs, rhs in
+                        switch (lhs, rhs) {
+                        case (.date(_), .text(_)):
+                            return true
+                        case (.text(_), .date(_)):
+                            return false
+                        case (.text(let lhs), .text(let rhs)):
+                            return lhs.text.compare(rhs.text, options: .caseInsensitive) == .orderedAscending
+                        case (.date(let lhs), .date(let rhs)):
+                            switch lhs.template.compare(rhs.template) {
+                            case .orderedAscending:
+                                return true
+                            case .orderedDescending:
+                                return false
+                            case .orderedSame:
+                                return lhs.date < rhs.date
+                            }
+                        }
                     }
-                }
+                    .map {
+                        NoteTagViewModel(tag: $0)
+                    }
             )
         }
     }
