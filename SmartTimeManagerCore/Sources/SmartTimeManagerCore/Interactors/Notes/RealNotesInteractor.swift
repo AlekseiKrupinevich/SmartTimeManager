@@ -19,23 +19,14 @@ class RealNotesInteractor: NotesInteractor {
     }
     
     func tags() -> [NoteModel.Tag] {
-        var tags: [String: Color] = [:]
-        
         repository.notes()
             .flatMap { $0.tags }
-            .forEach { tag in
-                switch tag {
-                case .text((let text, let color)):
-                    tags[text] = color
-                case .date(_):
-                    return
+            .reduce(into: [NoteModel.Tag]()) { result, tag in
+                if !result.contains(tag) {
+                    result.append(tag)
                 }
             }
-        
-        return tags
-            .map {
-                NoteModel.Tag.text(($0.key, $0.value))
-            }
+            .sorted()
     }
     
     func validate(_ note: NoteModel) throws {

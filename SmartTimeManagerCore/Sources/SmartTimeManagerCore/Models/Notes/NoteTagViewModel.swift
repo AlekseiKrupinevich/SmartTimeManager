@@ -1,27 +1,20 @@
 import SwiftUI
 
 struct NoteTagViewModel: Identifiable {
-    let id: String
+    let id = UUID().uuidString
     let text: String
     let color: Color
-    
-    init(
-        id: String = UUID().uuidString,
-        text: String,
-        color: Color
-    ) {
-        self.id = id
-        self.text = text
-        self.color = color
-    }
+    let tag: NoteModel.Tag
     
     init(tag: NoteModel.Tag) {
+        self.tag = tag
         switch tag {
         case .text((let text, let color)):
-            self.init(text: text, color: color)
+            self.text = text
+            self.color = color
         case .date((let date, let format)):
-            let text = date.string(template: format)
-            self.init(text: text, color: .gray)
+            self.text = date.string(template: format)
+            self.color = .gray
         }
     }
 }

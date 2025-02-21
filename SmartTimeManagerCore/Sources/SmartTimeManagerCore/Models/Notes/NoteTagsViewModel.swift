@@ -1,21 +1,33 @@
 import SwiftUI
 
 class NoteTagsViewModel<DI: DIProtocol>: ObservableObject {
+    @Binding private var note: NoteModel
+    var interactor: DI.NotesInteractorType?
     @Published var appliedTags: [NoteTagViewModel] = []
     @Published var availableTags: [NoteTagViewModel] = []
-    var interactor: DI.NotesInteractorType?
-    @Binding private var note: NoteModel
     
     init(note: Binding<NoteModel>) {
         _note = note
     }
     
-    let availableDateTags = [
-        "Today",
-        "Current month",
-        "Current year",
-        "Custom date"
+    let availableDateTags: [DateTag] = [
+        .init(title: "Today", type: .today),
+        .init(title: "Current month", type: .currentMonth),
+        .init(title: "Current year", type: .currentYear),
+        .init(title: "Custom date", type: .customDate)
     ]
+    
+    struct DateTag: Identifiable {
+        let id = UUID().uuidString
+        let title: String
+        let type: TagType
+        enum TagType {
+            case today
+            case currentMonth
+            case currentYear
+            case customDate
+        }
+    }
     
     func update() {
         guard let interactor else {
@@ -25,34 +37,44 @@ class NoteTagsViewModel<DI: DIProtocol>: ObservableObject {
             .map {
                 NoteTagViewModel(tag: $0)
             }
-            .sorted(by: sort)
         availableTags = interactor.tags()
+            .filter { tag in
+                switch tag {
+                case .text(_):
+                    return !appliedTags.contains(where: { $0.tag == tag })
+                case .date((let date, let template)):
+                    return false
+                }
+            }
             .map {
                 NoteTagViewModel(tag: $0)
             }
-            .filter { tag in
-                !appliedTags.contains(where: { $0.text == tag.text })
-            }
-            .sorted(by: sort)
     }
     
-    func applyTag(_ tag: NoteTagViewModel) {
-        note.tags.append(.text((tag.text, tag.color)))
+    func applyTag(_ tag: NoteModel.Tag) {
+        note.tags.append(tag)
+        note.tags.sort()
         update()
     }
     
+    func applyDateTag(_ tag: DateTag) {
+        switch tag.type {
+        case .today:
+            applyTag(.date((date: Date().withoutTime, template: .dayTemplete)))
+        case .currentMonth:
+            applyTag(.date((date: Date().firstDayOfMonth, template: .monthTemplete)))
+        case .currentYear:
+            applyTag(.date((date: Date().firstDayOfYear, template: .yearTemplete)))
+        case .customDate:
+            break
+        }
+    }
+    
     func removeTag(id: String) {
-        guard let removedTag = appliedTags.first(where: { $0.id == id }) else {
+        guard let tag = appliedTags.first(where: { $0.id == id }) else {
             return
         }
-        note.tags.removeAll(where: { tag in
-            switch tag {
-            case .text((let text, _)):
-                return text == removedTag.text
-            case .date(_):
-                return false
-            }
-        })
+        note.tags.removeAll { $0 == tag.tag }
         update()
     }
     
@@ -60,9 +82,5 @@ class NoteTagsViewModel<DI: DIProtocol>: ObservableObject {
         !(appliedTags + availableTags).contains {
             $0.text.compare(text, options: .caseInsensitive) == .orderedSame
         }
-    }
-    
-    private func sort(lhs: NoteTagViewModel, rhs: NoteTagViewModel) -> Bool {
-        return lhs.text.compare(rhs.text, options: .caseInsensitive) == .orderedAscending
     }
 }

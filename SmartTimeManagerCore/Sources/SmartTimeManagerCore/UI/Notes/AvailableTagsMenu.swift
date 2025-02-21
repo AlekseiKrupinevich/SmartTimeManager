@@ -3,6 +3,7 @@ import SwiftUI
 struct AvailableTagsMenu<DI: DIProtocol>: View {
     @EnvironmentObject var viewModel: NoteTagsViewModel<DI>
     let createNewTag: () -> Void
+    let createCustomDateTag: () -> Void
     
     var body: some View {
         Menu(
@@ -10,10 +11,11 @@ struct AvailableTagsMenu<DI: DIProtocol>: View {
                 HStack {
                     Menu(
                         content: {
-                            ForEach(viewModel.availableDateTags, id: \.self) { text in
-                                Button(action: { }) {
-                                    Text(text)
-                                }
+                            ForEach(viewModel.availableDateTags) { dateTag in
+                                Button(
+                                    action: { applyDateTag(dateTag) },
+                                    label: { Text(dateTag.title) }
+                                )
                             }
                         },
                         label: {
@@ -21,7 +23,7 @@ struct AvailableTagsMenu<DI: DIProtocol>: View {
                         }
                     )
                     ForEach(viewModel.availableTags) { tag in
-                        Button(action: { viewModel.applyTag(tag) }) {
+                        Button(action: { viewModel.applyTag(tag.tag) }) {
                             Text(tag.text)
                         }
                     }
@@ -35,5 +37,16 @@ struct AvailableTagsMenu<DI: DIProtocol>: View {
             }
         )
         .buttonStyle(BorderedButtonStyle())
+    }
+}
+
+extension AvailableTagsMenu {
+    func applyDateTag(_ dateTag: NoteTagsViewModel<DI>.DateTag) {
+        switch dateTag.type {
+        case .customDate:
+            createCustomDateTag()
+        default:
+            viewModel.applyDateTag(dateTag)
+        }
     }
 }

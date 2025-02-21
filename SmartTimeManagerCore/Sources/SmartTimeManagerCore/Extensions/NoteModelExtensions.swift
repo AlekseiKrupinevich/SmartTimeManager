@@ -32,10 +32,31 @@ extension NoteModel.Tag: Equatable {
     static func == (lhs: NoteModel.Tag, rhs: NoteModel.Tag) -> Bool {
         switch (lhs, rhs) {
         case let (.text((lhsText, lhsColor)), .text((rhsText, rhsColor))):
-            return lhsText == rhsText && lhsColor == rhsColor
+            return lhsText.compare(rhsText, options: .caseInsensitive) == .orderedSame
         case let (.date((lhsDate, lhsTemplate)), .date((rhsDate, rhsTemplate))):
-            return lhsDate == rhsDate && lhsTemplate == rhsTemplate
+            return lhsDate.string(template: lhsTemplate) == rhsDate.string(template: rhsTemplate)
         default:
+            return false
+        }
+    }
+}
+
+extension NoteModel.Tag: Comparable {
+    static func < (lhs: NoteModel.Tag, rhs: NoteModel.Tag) -> Bool {
+        switch (lhs, rhs) {
+        case let (.text((lhsText, lhsColor)), .text((rhsText, rhsColor))):
+            return lhsText.compare(rhsText, options: .caseInsensitive) == .orderedAscending
+        case let (.date((lhsDate, lhsTemplate)), .date((rhsDate, rhsTemplate))):
+            if lhsTemplate.templatePriority < rhsTemplate.templatePriority {
+                return true
+            }
+            if lhsTemplate.templatePriority > rhsTemplate.templatePriority {
+                return false
+            }
+            return lhsDate < rhsDate
+        case (.date(_), .text(_)):
+            return true
+        case (.text(_), .date(_)):
             return false
         }
     }

@@ -28,8 +28,13 @@ struct NoteTagsView<DI: DIProtocol>: View {
                             }
                         )
                     }
-                    AvailableTagsMenu<DI>(createNewTag: { isCreateTagSheetVisible = true })
-                        .environmentObject(viewModel)
+                    AvailableTagsMenu<DI>(
+                        createNewTag: {
+                            isCreateTagSheetVisible = true
+                        },
+                        createCustomDateTag: { }
+                    )
+                    .environmentObject(viewModel)
                 }
             }
             .scrollIndicators(.hidden)
@@ -59,6 +64,6 @@ extension NoteTagsView {
             return
         }
         isCreateTagSheetVisible = false
-        viewModel.applyTag(.init(text: text, color: color))
+        viewModel.applyTag(.text((text, color)))
     }
 }

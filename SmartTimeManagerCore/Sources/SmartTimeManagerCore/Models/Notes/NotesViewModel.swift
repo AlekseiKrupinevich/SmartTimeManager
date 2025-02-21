@@ -26,14 +26,15 @@ class NotesViewModel<DI: DIProtocol>: ObservableObject {
                         case (.text(let lhs), .text(let rhs)):
                             return lhs.text.compare(rhs.text, options: .caseInsensitive) == .orderedAscending
                         case (.date(let lhs), .date(let rhs)):
-                            switch lhs.template.compare(rhs.template) {
-                            case .orderedAscending:
+                            let lhsPriority = lhs.template.templatePriority
+                            let rhsPriority = rhs.template.templatePriority
+                            if lhsPriority < rhsPriority {
                                 return true
-                            case .orderedDescending:
-                                return false
-                            case .orderedSame:
-                                return lhs.date < rhs.date
                             }
+                            if lhsPriority > rhsPriority {
+                                return false
+                            }
+                            return lhs.date < rhs.date
                         }
                     }
                     .map {
