@@ -4,6 +4,7 @@ struct AvailableTagsMenu<DI: DIProtocol>: View {
     @EnvironmentObject var viewModel: NoteTagsViewModel<DI>
     let createNewTag: () -> Void
     let createCustomDateTag: () -> Void
+    let displayError: (String) -> Void
     
     var body: some View {
         Menu(
@@ -46,7 +47,11 @@ extension AvailableTagsMenu {
         case .customDate:
             createCustomDateTag()
         default:
-            viewModel.applyDateTag(dateTag)
+            if viewModel.isApplied(dateTag) {
+                displayError("The tag is already applied")
+            } else {
+                viewModel.applyDateTag(dateTag)
+            }
         }
     }
 }

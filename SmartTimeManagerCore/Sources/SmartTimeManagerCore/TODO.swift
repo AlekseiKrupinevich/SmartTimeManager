@@ -2,10 +2,6 @@
  
  ver. 1.4
  – Implement Notes
-   • Tags
-     • Validate that name is not empty
-     • Validate that the same date is not applied
-     • Custom date tags
    • RealNotesRepository
    • Notes' Filters
  – Configure icon, bundle, etc.

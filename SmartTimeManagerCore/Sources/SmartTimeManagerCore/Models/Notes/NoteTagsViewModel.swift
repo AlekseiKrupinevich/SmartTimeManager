@@ -57,17 +57,17 @@ class NoteTagsViewModel<DI: DIProtocol>: ObservableObject {
         update()
     }
     
-    func applyDateTag(_ tag: DateTag) {
-        switch tag.type {
-        case .today:
-            applyTag(.date((date: Date().withoutTime, template: .dayTemplete)))
-        case .currentMonth:
-            applyTag(.date((date: Date().firstDayOfMonth, template: .monthTemplete)))
-        case .currentYear:
-            applyTag(.date((date: Date().firstDayOfYear, template: .yearTemplete)))
-        case .customDate:
-            break
+    func applyDateTag(_ dateTag: DateTag) {
+        if let tag = tag(dateTag: dateTag) {
+            applyTag(tag)
         }
+    }
+    
+    func isApplied(_ dateTag: DateTag) -> Bool {
+        guard let tag = tag(dateTag: dateTag) else {
+            return false
+        }
+        return note.tags.contains(tag)
     }
     
     func removeTag(id: String) {
@@ -78,9 +78,35 @@ class NoteTagsViewModel<DI: DIProtocol>: ObservableObject {
         update()
     }
     
-    func validateNewTag(text: String) -> Bool {
-        !(appliedTags + availableTags).contains {
+    func validateNewTag(text: String) throws {
+        if text.isEmpty {
+            throw "Text is empty"
+        }
+        if (appliedTags + availableTags).contains(where: {
             $0.text.compare(text, options: .caseInsensitive) == .orderedSame
+        }) {
+            throw "A tag with this text already exists"
+        }
+    }
+    
+    func validateNewTag(date: Date, template: String) throws {
+        if appliedTags.contains(where: {
+            $0.tag == .date((date: date, template: template))
+        }) {
+            throw "The tag is already applied"
+        }
+    }
+    
+    private func tag(dateTag: DateTag) -> NoteModel.Tag? {
+        switch dateTag.type {
+        case .today:
+            return .date((date: Date().withoutTime, template: .dayTemplete))
+        case .currentMonth:
+            return .date((date: Date().firstDayOfMonth, template: .monthTemplete))
+        case .currentYear:
+            return .date((date: Date().firstDayOfYear, template: .yearTemplete))
+        case .customDate:
+            return nil
         }
     }
 }

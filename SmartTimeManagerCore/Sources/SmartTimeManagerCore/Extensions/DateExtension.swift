@@ -83,4 +83,40 @@ extension Date {
         let lastDayOfMonth = Calendar.current.date(from: components)
         return self == lastDayOfMonth
     }
+    
+    var month: Int {
+        get {
+            return components.month ?? 0
+        }
+        set {
+            var components = Calendar.current.dateComponents(
+                [.year, .month, .day],
+                from: self
+            )
+            components.calendar = Calendar.current
+            components.timeZone = .gmt
+            components.month = newValue
+            if let date = Calendar.current.date(from: components) {
+                self = date
+            }
+        }
+    }
+    
+    var year: Int {
+        get {
+            return components.year ?? 0
+        }
+        set {
+            var components = Calendar.current.dateComponents(
+                [.year, .month, .day],
+                from: self
+            )
+            components.calendar = Calendar.current
+            components.timeZone = .gmt
+            components.year = newValue
+            if let date = Calendar.current.date(from: components) {
+                self = date
+            }
+        }
+    }
 }

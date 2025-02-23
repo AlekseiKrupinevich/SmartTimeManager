@@ -5,6 +5,7 @@ struct NoteTagsView<DI: DIProtocol>: View {
     @EnvironmentObject private var interactor: DI.NotesInteractorType
     @StateObject private var viewModel: NoteTagsViewModel<DI>
     @State private var isCreateTagSheetVisible = false
+    @State private var isCreateDateTagSheetVisible = false
     @State private var isAlertPresented = false
     @State private var alertTitle = ""
     
@@ -32,7 +33,13 @@ struct NoteTagsView<DI: DIProtocol>: View {
                         createNewTag: {
                             isCreateTagSheetVisible = true
                         },
-                        createCustomDateTag: { }
+                        createCustomDateTag: {
+                            isCreateDateTagSheetVisible = true
+                        },
+                        displayError: { error in
+                            alertTitle = error
+                            isAlertPresented = true
+                        }
                     )
                     .environmentObject(viewModel)
                 }
@@ -43,6 +50,11 @@ struct NoteTagsView<DI: DIProtocol>: View {
             viewModel.interactor = interactor
             viewModel.update()
         }
+        .alert(
+            alertTitle,
+            isPresented: $isAlertPresented,
+            actions: {}
+        )
         .sheet(
             isPresented: $isCreateTagSheetVisible,
             content: {
@@ -52,18 +64,38 @@ struct NoteTagsView<DI: DIProtocol>: View {
                 )
             }
         )
-        .alert(alertTitle, isPresented: $isAlertPresented, actions: {})
+        .sheet(
+            isPresented: $isCreateDateTagSheetVisible,
+            content: {
+                CreateDateTagSheet(
+                    cancel: { isCreateDateTagSheetVisible = false },
+                    create: createDateTag
+                )
+            }
+        )
     }
 }
 
 extension NoteTagsView {
     func createTag(text: String, color: Color) {
-        guard viewModel.validateNewTag(text: text) else {
-            alertTitle = "A tag with this text already exists"
+        do {
+            try viewModel.validateNewTag(text: text)
+            isCreateTagSheetVisible = false
+            viewModel.applyTag(.text((text, color)))
+        } catch {
+            alertTitle = "\(error)"
             isAlertPresented = true
-            return
         }
-        isCreateTagSheetVisible = false
-        viewModel.applyTag(.text((text, color)))
+    }
+    
+    func createDateTag(date: Date, template: String) {
+        do {
+            try viewModel.validateNewTag(date: date, template: template)
+            isCreateDateTagSheetVisible = false
+            viewModel.applyTag(.date((date, template)))
+        } catch {
+            alertTitle = "\(error)"
+            isAlertPresented = true
+        }
     }
 }
