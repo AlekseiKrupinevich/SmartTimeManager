@@ -41,6 +41,17 @@ class MockNotesRepository: NotesRepository {
         _notes.first { $0.id == id }
     }
     
+    func tags() -> [NoteModel.Tag] {
+        notes()
+            .flatMap { $0.tags }
+            .reduce(into: [NoteModel.Tag]()) { result, tag in
+                if !result.contains(tag) {
+                    result.append(tag)
+                }
+            }
+            .sorted()
+    }
+    
     func add(note: NoteModel) {
         _notes.insert(note, at: 0)
     }

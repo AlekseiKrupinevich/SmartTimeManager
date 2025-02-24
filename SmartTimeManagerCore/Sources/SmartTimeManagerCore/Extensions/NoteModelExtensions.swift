@@ -61,3 +61,15 @@ extension NoteModel.Tag: Comparable {
         }
     }
 }
+
+extension NoteModel.Tag: Hashable {
+    func hash(into hasher: inout Hasher) {
+        switch self {
+        case .text((let text, _)):
+            hasher.combine(text)
+        case .date((let date, let template)):
+            hasher.combine(date)
+            hasher.combine(template)
+        }
+    }
+}

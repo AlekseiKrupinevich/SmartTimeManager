@@ -168,4 +168,23 @@ struct CoreDataWrapper {
         viewContext.delete(task)
         try? viewContext.save()
     }
+    
+    static func dayReports() -> [DayReport] {
+        let request = NSFetchRequest<DayReport>(entityName: "DayReport")
+        let fetchResult = try? viewContext.fetch(request)
+        return fetchResult ?? []
+    }
+    
+    static func monthReports() -> [MonthReport] {
+        let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
+        let fetchResult = try? viewContext.fetch(request)
+        return fetchResult ?? []
+    }
+    
+    static func dayReport(id: String) -> DayReport? {
+        let request = NSFetchRequest<DayReport>(entityName: "DayReport")
+        request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+        let fetchResult = try? viewContext.fetch(request)
+        return fetchResult?.first
+    }
 }

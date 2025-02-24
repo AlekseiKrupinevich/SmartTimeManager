@@ -44,14 +44,14 @@ extension Date {
     var firstDayOfMonth: Date {
         var components = self.components
         components.day = 1
-        return components.date ?? Date()
+        return (components.date ?? Date()).withoutTime
     }
     
     var firstDayOfYear: Date {
         var components = self.components
         components.day = 1
         components.month = 1
-        return components.date ?? Date()
+        return (components.date ?? Date()).withoutTime
     }
     
     static var weekdays: [(day: Int, shortSymbol: String)] {
