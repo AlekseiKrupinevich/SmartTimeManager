@@ -9,7 +9,7 @@
  ver. 1.5
  – Implement Settings
  – Implement reorder feature
- – Refactor EditTaskView
+ – Refactor EditTaskView, CoreDataWrapper, RealNotesRepository, RealTasksRepository
  – Implement notifications
  
  ver. 1.6

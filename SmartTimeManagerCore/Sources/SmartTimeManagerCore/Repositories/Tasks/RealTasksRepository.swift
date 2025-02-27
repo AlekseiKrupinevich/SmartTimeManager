@@ -2,27 +2,38 @@ import Foundation
 
 class RealTasksRepository: TasksRepository {
     private var subscriptions: [() -> Void] = []
+    private var _tasks: [TaskModel] = []
     
     func tasks() -> [TaskModel] {
-        return CoreDataWrapper.tasks()
-            .compactMap { convert(task: $0) }
+        return _tasks
     }
     
     func task(id: String) -> TaskModel? {
-        return CoreDataWrapper.task(id: id)
-            .flatMap { convert(task: $0) }
+        return _tasks.first { $0.id == id }
     }
     
     func add(task: TaskModel) {
-        CoreDataWrapper.add(task)
+        _tasks.append(task)
+        _Concurrency.Task {
+            await CoreDataWrapper.add(task)
+        }
     }
     
     func update(task: TaskModel) {
-        CoreDataWrapper.update(task)
+        guard let index = _tasks.firstIndex(where: { $0.id == task.id }) else {
+            return
+        }
+        _tasks[index] = task
+        _Concurrency.Task {
+            await CoreDataWrapper.update(task)
+        }
     }
     
     func deleteTask(id: String) {
-        CoreDataWrapper.deleteTask(id: id)
+        _tasks.removeAll(where: { $0.id == id })
+        _Concurrency.Task {
+            await CoreDataWrapper.deleteTask(id: id)
+        }
     }
     
     func subscribe(onUpdate: @escaping () -> Void) {
@@ -34,6 +45,7 @@ class RealTasksRepository: TasksRepository {
             self,
             selector: #selector(handleRemoteChange)
         )
+        fetchUpdatesIfNeeded()
     }
     
     deinit {
@@ -41,14 +53,10 @@ class RealTasksRepository: TasksRepository {
     }
     
     @objc private func handleRemoteChange() {
-        for subscription in subscriptions {
-            DispatchQueue.main.async {
-                subscription()
-            }
-        }
+        fetchUpdatesIfNeeded()
     }
     
-    private func convert(task: Task) -> TaskModel? {
+    private func convert(_ task: Task) -> TaskModel? {
         guard let completionConditions = task.completionConditions else {
             return nil
         }
@@ -115,5 +123,47 @@ class RealTasksRepository: TasksRepository {
             type: type,
             completionDates: completionDates
         )
+    }
+    
+    private var isUpdateInProgress = false
+    private var needToRepeatUpdate = false
+    
+    private func fetchUpdatesIfNeeded() {
+        DispatchQueue.main.async {
+            if self.isUpdateInProgress {
+                self.needToRepeatUpdate = true
+                return
+            }
+            self.isUpdateInProgress = true
+            self.needToRepeatUpdate = false
+            self.fetchUpdates()
+        }
+    }
+    
+    private func fetchUpdates() {
+        _Concurrency.Task {
+            let tasks = await fetchTasks()
+            
+            DispatchQueue.main.async {
+                self._tasks = tasks
+                
+                for subscription in self.subscriptions {
+                    subscription()
+                }
+                
+                self.isUpdateInProgress = false
+                
+                if self.needToRepeatUpdate {
+                    self.fetchUpdatesIfNeeded()
+                }
+            }
+        }
+    }
+    
+    private func fetchTasks() async -> [TaskModel] {
+        let tasks = await CoreDataWrapper.tasks()
+        return await MainActor.run {
+            return tasks.compactMap { convert($0) }
+        }
     }
 }

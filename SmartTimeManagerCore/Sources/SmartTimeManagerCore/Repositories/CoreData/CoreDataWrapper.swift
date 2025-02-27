@@ -50,18 +50,22 @@ struct CoreDataWrapper {
         viewContext.refreshAllObjects()
     }
     
-    static func task(id: String) -> Task? {
-        let request = NSFetchRequest<Task>(entityName: "Task")
-        request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
-        let fetchResult = try? viewContext.fetch(request)
-        return fetchResult?.first
+    static func task(id: String) async -> Task? {
+        await MainActor.run {
+            let request = NSFetchRequest<Task>(entityName: "Task")
+            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+            let fetchResult = try? viewContext.fetch(request)
+            return fetchResult?.first
+        }
     }
     
-    static func tasks() -> [Task] {
-        let request = NSFetchRequest<Task>(entityName: "Task")
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.createDate, ascending: true)]
-        let fetchResult = try? viewContext.fetch(request)
-        return fetchResult ?? []
+    static func tasks() async -> [Task] {
+        await MainActor.run {
+            let request = NSFetchRequest<Task>(entityName: "Task")
+            request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.createDate, ascending: true)]
+            let fetchResult = try? viewContext.fetch(request)
+            return fetchResult ?? []
+        }
     }
     
     static func subscribeOnUpdates(_ subscriber: Any, selector: Selector) {
@@ -77,114 +81,123 @@ struct CoreDataWrapper {
         NotificationCenter.default.removeObserver(subscriber)
     }
     
-    static func add(_ taskModel: TaskModel) {
-        let task = Task(context: viewContext)
-        task.uuid = taskModel.id
-        task.createDate = Date()
-        updateTask(task, taskModel: taskModel)
+    static func add(_ taskModel: TaskModel) async {
+        var task: Task? = nil
+        await withCheckedContinuation { continuation in
+            DispatchQueue.main.async {
+                task = Task(context: viewContext)
+                task?.uuid = taskModel.id
+                task?.createDate = Date()
+                continuation.resume()
+            }
+        }
+        if let task {
+            await updateTask(task, taskModel: taskModel)
+        }
     }
     
-    static func update(_ taskModel: TaskModel) {
-        guard let task = task(id: taskModel.id) else {
+    static func update(_ taskModel: TaskModel) async {
+        guard let task = await task(id: taskModel.id) else {
             return
         }
-        updateTask(task, taskModel: taskModel)
+        await updateTask(task, taskModel: taskModel)
     }
     
-    static func updateTask(_ task: Task, taskModel: TaskModel) {
-        task.name = taskModel.title
-        task.descr = taskModel.notes
-        
-        let completionConditions: TaskCompletionConditions = {
-            if let completionConditions = task.completionConditions {
-                return completionConditions
-            } else {
-                let completionConditions = TaskCompletionConditions(context: viewContext)
-                task.completionConditions = completionConditions
-                return completionConditions
-            }
-        }()
-        
-        switch taskModel.type {
-        case .oneTime(let oneTime):
-            completionConditions.type = 1
-            completionConditions.oneTimeDate = oneTime.date
-            completionConditions.oneTimeCarryOver = oneTime.carryOver
-        case .periodic(let periodic):
-            completionConditions.type = 2
+    static func updateTask(_ task: Task, taskModel: TaskModel) async {
+        await MainActor.run {
+            task.name = taskModel.title
+            task.descr = taskModel.notes
             
-            switch periodic.timeFrame {
-            case .on(let on):
-                completionConditions.periodFrom = on.startDate
-                completionConditions.periodTo = on.endDate
-            case .off:
-                completionConditions.periodFrom = nil
-                completionConditions.periodTo = nil
+            let completionConditions: TaskCompletionConditions = {
+                if let completionConditions = task.completionConditions {
+                    return completionConditions
+                } else {
+                    let completionConditions = TaskCompletionConditions(context: viewContext)
+                    task.completionConditions = completionConditions
+                    return completionConditions
+                }
+            }()
+            
+            switch taskModel.type {
+            case .oneTime(let oneTime):
+                completionConditions.type = 1
+                completionConditions.oneTimeDate = oneTime.date
+                completionConditions.oneTimeCarryOver = oneTime.carryOver
+            case .periodic(let periodic):
+                completionConditions.type = 2
+                
+                switch periodic.timeFrame {
+                case .on(let on):
+                    completionConditions.periodFrom = on.startDate
+                    completionConditions.periodTo = on.endDate
+                case .off:
+                    completionConditions.periodFrom = nil
+                    completionConditions.periodTo = nil
+                }
+                
+                switch periodic.type {
+                case .everyday:
+                    completionConditions.periodicType = 4
+                    completionConditions.points = ""
+                case .weekly(let days):
+                    completionConditions.periodicType = 1
+                    completionConditions.points = Array(days)
+                        .sorted()
+                        .map { String($0) }
+                        .joined(separator: ",")
+                case .monthly(let days):
+                    completionConditions.periodicType = 2
+                    completionConditions.points = Array(days)
+                        .sorted()
+                        .map { String($0) }
+                        .joined(separator: ",")
+                case .lastDayOfMonth:
+                    completionConditions.periodicType = 3
+                    completionConditions.points = ""
+                }
             }
             
-            switch periodic.type {
-            case .everyday:
-                completionConditions.periodicType = 4
-                completionConditions.points = ""
-            case .weekly(let days):
-                completionConditions.periodicType = 1
-                completionConditions.points = Array(days)
-                    .sorted()
-                    .map { String($0) }
-                    .joined(separator: ",")
-            case .monthly(let days):
-                completionConditions.periodicType = 2
-                completionConditions.points = Array(days)
-                    .sorted()
-                    .map { String($0) }
-                    .joined(separator: ",")
-            case .lastDayOfMonth:
-                completionConditions.periodicType = 3
-                completionConditions.points = ""
-            }
+            let states: Set<TaskState> = (task.states as? Set<TaskState>) ?? []
+            
+            task.states = NSSet(array: taskModel.completionDates.map { date in
+                let state: TaskState
+                if let _state = states.first(where: { $0.associatedDate == date }) {
+                    state = _state
+                } else {
+                    state = TaskState(context: viewContext)
+                    state.associatedDate = date
+                }
+                state.complated = true
+                return state
+            })
+            
+            try? viewContext.save()
         }
-        
-        let states: Set<TaskState> = (task.states as? Set<TaskState>) ?? []
-        
-        task.states = NSSet(array: taskModel.completionDates.map { date in
-            let state: TaskState
-            if let _state = states.first(where: { $0.associatedDate == date }) {
-                state = _state
-            } else {
-                state = TaskState(context: viewContext)
-                state.associatedDate = date
-            }
-            state.complated = true
-            return state
-        })
-        
-        try? viewContext.save()
     }
     
-    static func deleteTask(id: String) {
-        guard let task = task(id: id) else {
+    static func deleteTask(id: String) async {
+        guard let task = await task(id: id) else {
             return
         }
-        viewContext.delete(task)
-        try? viewContext.save()
+        await MainActor.run {
+            viewContext.delete(task)
+            try? viewContext.save()
+        }
     }
     
-    static func dayReports() -> [DayReport] {
-        let request = NSFetchRequest<DayReport>(entityName: "DayReport")
-        let fetchResult = try? viewContext.fetch(request)
-        return fetchResult ?? []
+    static func dayReports() async -> [DayReport] {
+        await MainActor.run {
+            let request = NSFetchRequest<DayReport>(entityName: "DayReport")
+            let fetchResult = try? viewContext.fetch(request)
+            return fetchResult ?? []
+        }
     }
     
-    static func monthReports() -> [MonthReport] {
-        let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
-        let fetchResult = try? viewContext.fetch(request)
-        return fetchResult ?? []
-    }
-    
-    static func dayReport(id: String) -> DayReport? {
-        let request = NSFetchRequest<DayReport>(entityName: "DayReport")
-        request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
-        let fetchResult = try? viewContext.fetch(request)
-        return fetchResult?.first
+    static func monthReports() async -> [MonthReport] {
+        await MainActor.run {
+            let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
+            let fetchResult = try? viewContext.fetch(request)
+            return fetchResult ?? []
+        }
     }
 }

@@ -69,54 +69,59 @@ class RealNotesRepository: NotesRepository {
     private var needToRepeatUpdate = false
     
     private func fetchUpdatesIfNeeded() {
-        if isUpdateInProgress {
-            needToRepeatUpdate = true
-            return
-        }
-        _Concurrency.Task {
-            isUpdateInProgress = true
-            needToRepeatUpdate = false
-            await fetchUpdates()
-        }
-    }
-    
-    private func fetchUpdates() async {
-        let notes = fetchNotes()
-        let tags = fetchTags()
-        
         DispatchQueue.main.async {
-            self._notes = notes
-            self._tags = tags
-            
-            for subscription in self.subscriptions {
-                subscription()
+            if self.isUpdateInProgress {
+                self.needToRepeatUpdate = true
+                return
             }
+            self.isUpdateInProgress = true
+            self.needToRepeatUpdate = false
+            self.fetchUpdates()
+        }
+    }
+    
+    private func fetchUpdates() {
+        _Concurrency.Task {
+            let notes = await fetchNotes()
+            let tags = getTags(notes: notes)
             
-            self.isUpdateInProgress = false
-            
-            if self.needToRepeatUpdate {
-                self.fetchUpdatesIfNeeded()
+            DispatchQueue.main.async {
+                self._notes = notes
+                self._tags = tags
+                
+                for subscription in self.subscriptions {
+                    subscription()
+                }
+                
+                self.isUpdateInProgress = false
+                
+                if self.needToRepeatUpdate {
+                    self.fetchUpdatesIfNeeded()
+                }
             }
         }
     }
     
-    private func fetchNotes() -> [NoteModel] {
-        let dayNotes = CoreDataWrapper.dayReports().map { convert($0) }
-        let monthNotes = CoreDataWrapper.monthReports().map { convert($0) }
-        return (dayNotes + monthNotes).sorted { lhs, rhs in
-            if
-                let lhsTag = lhs.tags.first,
-                let rhsTag = rhs.tags.first,
-                lhsTag > rhsTag
-            {
-                return true
-            }
-            return false
+    private func fetchNotes() async -> [NoteModel] {
+        let dayNotes = await CoreDataWrapper.dayReports()
+        let monthNotes = await CoreDataWrapper.monthReports()
+        return await MainActor.run {
+            return (dayNotes.map { convert($0) } + monthNotes.map { convert($0) })
+                .sorted { lhs, rhs in
+                    if
+                        let lhsTag = lhs.tags.first,
+                        let rhsTag = rhs.tags.first,
+                        lhsTag > rhsTag
+                    {
+                        return true
+                    }
+                    return false
+                }
         }
     }
     
-    private func fetchTags() -> [NoteModel.Tag] {
-        notes()
+    private func getTags(notes: [NoteModel]) -> [NoteModel.Tag] {
+        notes
             .flatMap { $0.tags }
             .reduce(into: Set<NoteModel.Tag>()) { result, tag in
                 if !result.contains(tag) {
