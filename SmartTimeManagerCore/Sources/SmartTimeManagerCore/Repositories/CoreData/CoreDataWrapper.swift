@@ -1,4 +1,5 @@
 import CoreData
+import SwiftUI
 
 struct CoreDataWrapper {
     private nonisolated(unsafe) static var container: NSPersistentCloudKitContainer = {
@@ -48,6 +49,14 @@ struct CoreDataWrapper {
     
     static func update() {
         viewContext.refreshAllObjects()
+    }
+    
+    static func updateCoreDataSchema() {
+        do {
+            try container.initializeCloudKitSchema(options: NSPersistentCloudKitContainerSchemaInitializationOptions())
+        } catch {
+            fatalError("initializeCloudKitSchema error: \(error)")
+        }
     }
     
     static func task(id: String) async -> Task? {
@@ -198,6 +207,138 @@ struct CoreDataWrapper {
             let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
             let fetchResult = try? viewContext.fetch(request)
             return fetchResult ?? []
+        }
+    }
+    
+    static func add(_ noteModel: NoteModel) async {
+        var note: Note? = nil
+        await withCheckedContinuation { continuation in
+            DispatchQueue.main.async {
+                note = Note(context: viewContext)
+                note?.uuid = noteModel.id
+                continuation.resume()
+            }
+        }
+        if let note {
+            await updateNote(note, noteModel: noteModel)
+        }
+    }
+    
+    static func updateNote(_ note: Note, noteModel: NoteModel) async {
+        await MainActor.run {
+            note.lastModifiedDate = Date()
+            note.text = noteModel.text
+            let tags: Set<NoteTag> = (note.tags as? Set<NoteTag>) ?? []
+            
+            note.tags = NSSet(array: noteModel.tags.map { tag in
+                let noteTag: NoteTag
+                if let _noteTag = tags.first(where: {
+                    convert($0) == tag
+                }) {
+                    noteTag = _noteTag
+                } else {
+                    noteTag = convert(tag)
+                }
+                return noteTag
+            })
+            
+            try? viewContext.save()
+        }
+    }
+    
+    private static func convert(_ noteTag: NoteTag) -> NoteModel.Tag? {
+        switch noteTag.type {
+        case 1:
+            guard
+                let text = noteTag.text,
+                let color = noteTag.color
+            else {
+                return nil
+            }
+            return .text((text: text, color: Color(color)))
+        case 2:
+            guard
+                let date = noteTag.date,
+                let template = noteTag.template
+            else {
+                return nil
+            }
+            return .date((date: date, template: template))
+        default:
+            return nil
+        }
+    }
+    
+    private static func convert(_ tag: NoteModel.Tag) -> NoteTag {
+        let noteTag = NoteTag(context: viewContext)
+        switch tag {
+        case .text((let text, let color)):
+            noteTag.type = 1
+            noteTag.text = text
+            noteTag.color = String(color)
+        case .date((let date, let template)):
+            noteTag.type = 2
+            noteTag.date = date
+            noteTag.template = template
+        }
+        return noteTag
+    }
+    
+    static func deleteNote(id: String) async {
+        await MainActor.run {
+            let request = NSFetchRequest<Task>(entityName: "Note")
+            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+            if let note = (try? viewContext.fetch(request))?.first {
+                viewContext.delete(note)
+            }
+        }
+        await MainActor.run {
+            let request = NSFetchRequest<DayReport>(entityName: "DayReport")
+            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+            if let note = (try? viewContext.fetch(request))?.first {
+                viewContext.delete(note)
+            }
+        }
+        await MainActor.run {
+            let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
+            request.predicate = NSPredicate(format: "id == %@", argumentArray: [id])
+            if let note = (try? viewContext.fetch(request))?.first {
+                viewContext.delete(note)
+            }
+        }
+        await MainActor.run {
+            try? viewContext.save()
+        }
+    }
+    
+    static func update(_ noteModel: NoteModel) async {
+        await MainActor.run {
+            let request = NSFetchRequest<DayReport>(entityName: "DayReport")
+            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [noteModel.id])
+            if let note = (try? viewContext.fetch(request))?.first {
+                viewContext.delete(note)
+            }
+        }
+        await MainActor.run {
+            let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
+            request.predicate = NSPredicate(format: "id == %@", argumentArray: [noteModel.id])
+            if let note = (try? viewContext.fetch(request))?.first {
+                viewContext.delete(note)
+            }
+        }
+        await MainActor.run {
+            try? viewContext.save()
+        }
+        var note: Note? = nil
+        await MainActor.run {
+            let request = NSFetchRequest<Note>(entityName: "Note")
+            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [noteModel.id])
+            note = (try? viewContext.fetch(request))?.first
+        }
+        if let note {
+            await updateNote(note, noteModel: noteModel)
+        } else {
+            await add(noteModel)
         }
     }
 }

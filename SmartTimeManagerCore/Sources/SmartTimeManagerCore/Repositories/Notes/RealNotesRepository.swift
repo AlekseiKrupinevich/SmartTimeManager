@@ -18,15 +18,27 @@ class RealNotesRepository: NotesRepository {
     }
     
     func add(note: NoteModel) {
-        // TODO: !!!
+        _notes.append(note)
+        _Concurrency.Task {
+            await CoreDataWrapper.add(note)
+        }
     }
     
     func update(note: NoteModel) {
-        // TODO: !!!
+        guard let index = _notes.firstIndex(where: { $0.id == note.id }) else {
+            return
+        }
+        _notes[index] = note
+        _Concurrency.Task {
+            await CoreDataWrapper.update(note)
+        }
     }
     
     func deleteNote(id: String) {
-        // TODO: !!!
+        _notes.removeAll(where: { $0.id == id })
+        _Concurrency.Task {
+            await CoreDataWrapper.deleteNote(id: id)
+        }
     }
     
     func subscribe(onUpdate: @escaping () -> Void) {
