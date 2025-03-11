@@ -4,6 +4,7 @@ class NotesViewModel<DI: DIProtocol>: ObservableObject {
     @Published var items: [NoteListItemViewModel] = []
     @Published var isApplyFiltersSheetVisible = false
     @Published var isAddNoteSheetVisible = false
+    @Published var filters = Filters()
     
     var interactor: DI.NotesInteractorType?
     
@@ -12,36 +13,72 @@ class NotesViewModel<DI: DIProtocol>: ObservableObject {
             return
         }
         objectWillChange.send()
-        items = interactor.notes().map { note in
-            return .init(
-                id: note.id,
-                text: note.text,
-                tags: note.tags
-                    .sorted { lhs, rhs in
-                        switch (lhs, rhs) {
-                        case (.date(_), .text(_)):
-                            return true
-                        case (.text(_), .date(_)):
+        items = interactor.notes()
+            .filter { note in
+                switch filters.appliedFilter {
+                case nil:
+                    return true
+                case .byTag(let text):
+                    return note.tags.contains(where: { tag in
+                        switch tag {
+                        case .text((let tagText, _)):
+                            return tagText == text
+                        case .date(_):
                             return false
-                        case (.text(let lhs), .text(let rhs)):
-                            return lhs.text.compare(rhs.text, options: .caseInsensitive) == .orderedAscending
-                        case (.date(let lhs), .date(let rhs)):
-                            let lhsPriority = lhs.template.templatePriority
-                            let rhsPriority = rhs.template.templatePriority
-                            if lhsPriority < rhsPriority {
-                                return true
-                            }
-                            if lhsPriority > rhsPriority {
+                        }
+                    })
+                case .byDate(let dateFilter):
+                    return note.tags.contains(where: { tag in
+                        switch tag {
+                        case .text(_):
+                            return false
+                        case .date((let date, let template)):
+                            guard template == dateFilter.template else {
                                 return false
                             }
-                            return lhs.date < rhs.date
+                            if let from = dateFilter.from, date < from {
+                                return false
+                            }
+                            if let to = dateFilter.to, date > to {
+                                return false
+                            }
+                            return true
                         }
-                    }
-                    .map {
-                        NoteTagViewModel(tag: $0)
-                    }
-            )
-        }
+                    })
+                case .withoutTags:
+                    return note.tags.isEmpty
+                }
+            }
+            .map { note in
+                return .init(
+                    id: note.id,
+                    text: note.text,
+                    tags: note.tags
+                        .sorted { lhs, rhs in
+                            switch (lhs, rhs) {
+                            case (.date(_), .text(_)):
+                                return true
+                            case (.text(_), .date(_)):
+                                return false
+                            case (.text(let lhs), .text(let rhs)):
+                                return lhs.text.compare(rhs.text, options: .caseInsensitive) == .orderedAscending
+                            case (.date(let lhs), .date(let rhs)):
+                                let lhsPriority = lhs.template.templatePriority
+                                let rhsPriority = rhs.template.templatePriority
+                                if lhsPriority < rhsPriority {
+                                    return true
+                                }
+                                if lhsPriority > rhsPriority {
+                                    return false
+                                }
+                                return lhs.date < rhs.date
+                            }
+                        }
+                        .map {
+                            NoteTagViewModel(tag: $0)
+                        }
+                )
+            }
     }
     
     func deleteNote(id: String) {

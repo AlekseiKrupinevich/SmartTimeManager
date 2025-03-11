@@ -1,16 +1,14 @@
 /*
  
  ver. 1.4
- – Implement Notes
-   • RealNotesRepository
-   • Notes' Filters
  – Configure icon, bundle, etc.
  
  ver. 1.5
  – Implement Settings
  – Implement reorder feature
- – Refactor EditTaskView, CoreDataWrapper, RealNotesRepository, RealTasksRepository
+ – Refactor EditTaskView, CoreDataWrapper, RealNotesRepository, RealTasksRepository, Notes' Filters
  – Implement notifications
+ – Find by text in notes
  
  ver. 1.6
  – Redesign
