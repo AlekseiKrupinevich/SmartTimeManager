@@ -1,9 +1,7 @@
 /*
  
- ver. 1.4
- – Configure icon, bundle, etc.
- 
  ver. 1.5
+ – Product Analytics
  – Implement Settings
  – Implement reorder feature
  – Refactor EditTaskView, CoreDataWrapper, RealNotesRepository, RealTasksRepository, Notes' Filters
