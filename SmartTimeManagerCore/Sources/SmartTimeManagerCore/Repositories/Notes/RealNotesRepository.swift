@@ -117,8 +117,10 @@ class RealNotesRepository: NotesRepository {
     private func fetchNotes() async -> [NoteModel] {
         let dayNotes = await CoreDataWrapper.dayReports()
         let monthNotes = await CoreDataWrapper.monthReports()
+        let notes = await CoreDataWrapper.notes()
         return await MainActor.run {
-            return (dayNotes.map { convert($0) } + monthNotes.map { convert($0) })
+            
+            return (dayNotes.map { convert($0) } + monthNotes.map { convert($0) } + notes)
                 .sorted { lhs, rhs in
                     if
                         let lhsTag = lhs.tags.first,

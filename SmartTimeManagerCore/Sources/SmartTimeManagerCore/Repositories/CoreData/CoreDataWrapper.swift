@@ -210,6 +210,14 @@ struct CoreDataWrapper {
         }
     }
     
+    static func notes() async -> [NoteModel] {
+        await MainActor.run {
+            let request = NSFetchRequest<Note>(entityName: "Note")
+            let fetchResult = try? viewContext.fetch(request)
+            return (fetchResult ?? []).map { convert($0) }
+        }
+    }
+    
     static func add(_ noteModel: NoteModel) async {
         var note: Note? = nil
         await withCheckedContinuation { continuation in
@@ -284,9 +292,18 @@ struct CoreDataWrapper {
         return noteTag
     }
     
+    private static func convert(_ note: Note) -> NoteModel {
+        let tags = note.tags as? Set<NoteTag> ?? []
+        return NoteModel(
+            id: note.uuid ?? "",
+            text: note.text ?? "",
+            tags: tags.compactMap { convert($0) }.sorted()
+        )
+    }
+    
     static func deleteNote(id: String) async {
         await MainActor.run {
-            let request = NSFetchRequest<Task>(entityName: "Note")
+            let request = NSFetchRequest<Note>(entityName: "Note")
             request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
             if let note = (try? viewContext.fetch(request))?.first {
                 viewContext.delete(note)
