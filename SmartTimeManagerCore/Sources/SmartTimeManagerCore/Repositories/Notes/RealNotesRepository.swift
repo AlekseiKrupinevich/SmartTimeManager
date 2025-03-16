@@ -71,7 +71,7 @@ class RealNotesRepository: NotesRepository {
     
     private func convert(_ monthReport: MonthReport) -> NoteModel {
         NoteModel(
-            id: "\(monthReport.id)",
+            id: monthReport.objectID.uriRepresentation().absoluteString,
             text: monthReport.text ?? "",
             tags: [.date(((monthReport.date ?? Date()).firstDayOfMonth, .monthTemplete))]
         )
@@ -119,7 +119,6 @@ class RealNotesRepository: NotesRepository {
         let monthNotes = await CoreDataWrapper.monthReports()
         let notes = await CoreDataWrapper.notes()
         return await MainActor.run {
-            
             return (dayNotes.map { convert($0) } + monthNotes.map { convert($0) } + notes)
                 .sorted { lhs, rhs in
                     if

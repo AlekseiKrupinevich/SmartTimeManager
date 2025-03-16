@@ -317,8 +317,15 @@ struct CoreDataWrapper {
             }
         }
         await MainActor.run {
+            guard
+                let uri = URL(string: id),
+                uri.scheme == "x-coredata",
+                let id = container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
+            else {
+                return
+            }
             let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
-            request.predicate = NSPredicate(format: "id == %@", argumentArray: [id])
+            request.predicate = NSPredicate(format: "(objectID = %@)", argumentArray: [id])
             if let note = (try? viewContext.fetch(request))?.first {
                 viewContext.delete(note)
             }
@@ -337,8 +344,15 @@ struct CoreDataWrapper {
             }
         }
         await MainActor.run {
+            guard
+                let uri = URL(string: noteModel.id),
+                uri.scheme == "x-coredata",
+                let id = container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
+            else {
+                return
+            }
             let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
-            request.predicate = NSPredicate(format: "id == %@", argumentArray: [noteModel.id])
+            request.predicate = NSPredicate(format: "(objectID = %@)", argumentArray: [id])
             if let note = (try? viewContext.fetch(request))?.first {
                 viewContext.delete(note)
             }
