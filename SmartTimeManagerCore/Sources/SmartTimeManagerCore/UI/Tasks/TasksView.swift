@@ -44,13 +44,11 @@ struct TasksView<DI: DIProtocol>: View {
         .environmentObject(viewModel)
         .onAppear {
             viewModel.interactor = interactor
+            viewModel.appState = appState
             viewModel.update()
         }
         .onReceive(interactor.objectWillChange) { _ in
             viewModel.update()
-        }
-        .onReceive(appState.didBecomeActiveNotification) { _ in
-            viewModel.swithToNewDayIfNeeded()
         }
     }
 }

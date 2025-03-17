@@ -1,13 +1,29 @@
 import SwiftUI
 
-class TasksViewModel<DI: DIProtocol>: ObservableObject {
+class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscriber {
     @Published var date = Date().withoutTime
     @Published var dateOfLastUpdate = Date().withoutTime
     @Published var items: [TaskListItemViewModel] = []
     @Published var isSelectDateSheetVisible = false
     @Published var isAddTaskSheetVisible = false
     
+    let id = UUID().uuidString
+    
     var interactor: DI.TasksInteractorType?
+    
+    var appState: AppState? {
+        didSet {
+            appState?.subscribeOnDidBecomeActive(self)
+        }
+    }
+    
+    deinit {
+        appState?.unsubscribeOnDidBecomeActive(self)
+    }
+    
+    func appDidBecomeActive() {
+        swithToNewDayIfNeeded()
+    }
     
     func update() {
         guard let interactor else {
