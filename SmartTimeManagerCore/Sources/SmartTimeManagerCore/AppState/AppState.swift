@@ -4,6 +4,8 @@ class AppState: ObservableObject {
     let didBecomeActiveNotification = NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
     private var subscribersOnDidBecomeActive: [any DidBecomeActiveSubscriber] = []
     
+    @Published var settings = Settings()
+    
     func appDidFinishLaunching() { }
     
     func appDidBecomeActive() {

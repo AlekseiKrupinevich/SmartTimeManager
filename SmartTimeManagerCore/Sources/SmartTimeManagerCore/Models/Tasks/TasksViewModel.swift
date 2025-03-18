@@ -30,10 +30,11 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscribe
             return
         }
         objectWillChange.send()
-        items = interactor.tasks(on: date).map { task in
+        items = interactor.tasks(on: date).enumerated().map { index, task in
             let isCompleted = task.completionDates.contains(date)
             return .init(
                 id: task.id,
+                index: index + 1,
                 title: task.title,
                 isCompleted: isCompleted
             )

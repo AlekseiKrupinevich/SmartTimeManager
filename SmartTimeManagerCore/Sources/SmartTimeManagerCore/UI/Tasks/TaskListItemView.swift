@@ -3,9 +3,10 @@ import SwiftUI
 struct TaskListItemView<DI: DIProtocol>: View {
     let itemViewModel: TaskListItemViewModel
     @EnvironmentObject private var viewModel: TasksViewModel<DI>
+    @EnvironmentObject private var appState: AppState
     
     var body: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 10) {
             Button(action: toggleCompletion) {
                 ZStack(alignment: .center) {
                     Image(systemName: "circle")
@@ -15,6 +16,10 @@ struct TaskListItemView<DI: DIProtocol>: View {
                             .foregroundColor(.accentColor)
                             .font(.system(size: 20, weight: .regular))
                             .offset(x: 2, y: -3)
+                    } else if appState.settings.isNumberingDisplayed {
+                        Text("\(itemViewModel.index)")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }

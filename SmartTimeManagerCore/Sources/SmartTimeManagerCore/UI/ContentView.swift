@@ -11,10 +11,10 @@ struct ContentView<DI: DIProtocol>: View {
                 .tabItem {
                     Label("Notes", systemImage: "note.text")
                 }
-//            Spacer()
-//                .tabItem { 
-//                    Label("Settings", systemImage: "gearshape")
-//                }
+            SettingsView()
+                .tabItem { 
+                    Label("Settings", systemImage: "gearshape")
+                }
         }
     }
 }
