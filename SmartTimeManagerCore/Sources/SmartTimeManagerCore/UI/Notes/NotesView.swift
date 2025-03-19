@@ -2,7 +2,8 @@ import SwiftUI
 
 struct NotesView<DI: DIProtocol>: View {
     @StateObject private var viewModel = NotesViewModel<DI>()
-    @EnvironmentObject private var interactor: DI.NotesInteractorType
+    @EnvironmentObject private var notesInteractor: DI.NotesInteractorType
+    @EnvironmentObject private var logsInteractor: DI.LogsInteractorType
     
     var body: some View {
         NavigationView {
@@ -38,10 +39,11 @@ struct NotesView<DI: DIProtocol>: View {
         }
         .environmentObject(viewModel)
         .onAppear {
-            viewModel.interactor = interactor
+            viewModel.notesInteractor = notesInteractor
+            viewModel.logsInteractor = logsInteractor
             viewModel.update()
         }
-        .onReceive(interactor.objectWillChange) { _ in
+        .onReceive(notesInteractor.objectWillChange) { _ in
             viewModel.update()
         }
     }

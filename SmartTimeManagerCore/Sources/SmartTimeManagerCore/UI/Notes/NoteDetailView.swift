@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct NoteDetailView<DI: DIProtocol>: View {
-    @EnvironmentObject private var interactor: DI.NotesInteractorType
+    @EnvironmentObject private var notesInteractor: DI.NotesInteractorType
+    @EnvironmentObject private var logsInteractor: DI.LogsInteractorType
     @State private var note: NoteModel
     @State private var originalNote: NoteModel
     @State private var isNoteModified = false
@@ -48,8 +49,9 @@ extension NoteDetailView {
     
     private func save() {
         do {
-            try interactor.validate(note)
-            interactor.update(note)
+            try notesInteractor.validate(note)
+            notesInteractor.update(note)
+            logsInteractor.logNoteEvent(.edit)
             update()
             isNoteModified = false
         } catch {
@@ -59,7 +61,7 @@ extension NoteDetailView {
     }
     
     private func update() {
-        guard let note = interactor.note(id: note.id) else {
+        guard let note = notesInteractor.note(id: note.id) else {
             return
         }
         self.note = note

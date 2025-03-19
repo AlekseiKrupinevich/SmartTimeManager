@@ -2,7 +2,8 @@ import SwiftUI
 
 struct ApplyFiltersSheet<DI: DIProtocol>: View {
     @EnvironmentObject private var viewModel: NotesViewModel<DI>
-    @EnvironmentObject private var interactor: DI.NotesInteractorType
+    @EnvironmentObject private var notesInteractor: DI.NotesInteractorType
+    @EnvironmentObject private var logsInteractor: DI.LogsInteractorType
     @State private var filterType = 1
     @State private var tags: [NoteTagViewModel] = []
     @State private var selectedTagId = ""
@@ -30,7 +31,7 @@ struct ApplyFiltersSheet<DI: DIProtocol>: View {
                 }
                 .interactiveDismissDisabled()
                 .onAppear {
-                    tags = interactor.tags()
+                    tags = notesInteractor.tags()
                         .filter {
                             switch $0 {
                             case .text(_):
@@ -151,6 +152,7 @@ extension ApplyFiltersSheet {
             viewModel.filters.appliedFilter = nil
         }
         viewModel.update()
+        logsInteractor.logNoteEvent(.applyFilters)
         hide()
     }
 }

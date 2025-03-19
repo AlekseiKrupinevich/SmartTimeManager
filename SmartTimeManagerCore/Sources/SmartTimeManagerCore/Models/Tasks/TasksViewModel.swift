@@ -9,7 +9,8 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscribe
     
     let id = UUID().uuidString
     
-    var interactor: DI.TasksInteractorType?
+    var tasksInteractor: DI.TasksInteractorType?
+    var logsInteractor: DI.LogsInteractorType?
     
     var appState: AppState? {
         didSet {
@@ -26,11 +27,11 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscribe
     }
     
     func update() {
-        guard let interactor else {
+        guard let tasksInteractor else {
             return
         }
         objectWillChange.send()
-        items = interactor.tasks(on: date).enumerated().map { index, task in
+        items = tasksInteractor.tasks(on: date).enumerated().map { index, task in
             let isCompleted = task.completionDates.contains(date)
             return .init(
                 id: task.id,
@@ -59,7 +60,8 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscribe
     }
     
     func deleteTask(id: String) {
-        interactor?.deleteTask(id: id)
+        tasksInteractor?.deleteTask(id: id)
+        logsInteractor?.logTaskEvent(.delete)
     }
     
     func deleteTasks(_ indexSet: IndexSet) {
@@ -71,24 +73,27 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscribe
                 return items[index].id
             }
             .forEach { id in
-                interactor?.deleteTask(id: id)
+                tasksInteractor?.deleteTask(id: id)
+                logsInteractor?.logTaskEvent(.delete)
             }
     }
     
     func toggleTaskCompletion(id: String) {
         guard
-            let interactor,
-            var task = interactor.task(id: id)
+            let tasksInteractor,
+            var task = tasksInteractor.task(id: id)
         else {
             return
         }
         let isCompleted = task.completionDates.contains(date)
         if isCompleted {
             task.completionDates.remove(date)
+            logsInteractor?.logTaskEvent(.uncomplete)
         } else {
             task.completionDates.insert(date)
+            logsInteractor?.logTaskEvent(.complete)
         }
-        interactor.update(task)
+        tasksInteractor.update(task)
     }
     
     func swithToNewDayIfNeeded() {

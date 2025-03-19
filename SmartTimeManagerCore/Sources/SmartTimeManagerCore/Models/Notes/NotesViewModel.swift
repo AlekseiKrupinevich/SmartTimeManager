@@ -6,14 +6,15 @@ class NotesViewModel<DI: DIProtocol>: ObservableObject {
     @Published var isAddNoteSheetVisible = false
     @Published var filters = Filters()
     
-    var interactor: DI.NotesInteractorType?
+    var notesInteractor: DI.NotesInteractorType?
+    var logsInteractor: DI.LogsInteractorType?
     
     func update() {
-        guard let interactor else {
+        guard let notesInteractor else {
             return
         }
         objectWillChange.send()
-        items = interactor.notes()
+        items = notesInteractor.notes()
             .filter { note in
                 switch filters.appliedFilter {
                 case nil:
@@ -82,7 +83,8 @@ class NotesViewModel<DI: DIProtocol>: ObservableObject {
     }
     
     func deleteNote(id: String) {
-        interactor?.deleteNote(id: id)
+        notesInteractor?.deleteNote(id: id)
+        logsInteractor?.logNoteEvent(.delete)
     }
     
     func deleteNotes(_ indexSet: IndexSet) {
@@ -94,7 +96,8 @@ class NotesViewModel<DI: DIProtocol>: ObservableObject {
                 return items[index].id
             }
             .forEach { id in
-                interactor?.deleteNote(id: id)
+                notesInteractor?.deleteNote(id: id)
+                logsInteractor?.logNoteEvent(.delete)
             }
     }
 }

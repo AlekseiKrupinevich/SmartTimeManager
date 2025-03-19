@@ -2,7 +2,8 @@ import SwiftUI
 
 struct AddTaskSheet<DI: DIProtocol>: View {
     @EnvironmentObject private var viewModel: TasksViewModel<DI>
-    @EnvironmentObject private var interactor: DI.TasksInteractorType
+    @EnvironmentObject private var tasksInteractor: DI.TasksInteractorType
+    @EnvironmentObject private var logsInteractor: DI.LogsInteractorType
     @State private var task: TaskModel
     @State private var isAlertPresented = false
     @State private var alertTitle = ""
@@ -40,8 +41,9 @@ extension AddTaskSheet {
     
     private func add() {
         do {
-            try interactor.validate(task)
-            interactor.add(task)
+            try tasksInteractor.validate(task)
+            tasksInteractor.add(task)
+            logsInteractor.logTaskEvent(.add)
             hide()
         } catch {
             alertTitle = "\(error)"

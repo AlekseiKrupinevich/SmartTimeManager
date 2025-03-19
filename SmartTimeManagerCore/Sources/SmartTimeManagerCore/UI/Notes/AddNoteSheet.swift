@@ -2,7 +2,8 @@ import SwiftUI
 
 struct AddNoteSheet<DI: DIProtocol>: View {
     @EnvironmentObject private var viewModel: NotesViewModel<DI>
-    @EnvironmentObject private var interactor: DI.NotesInteractorType
+    @EnvironmentObject private var notesInteractor: DI.NotesInteractorType
+    @EnvironmentObject private var logsInteractor: DI.LogsInteractorType
     @State private var note = NoteModel()
     @State private var isAlertPresented = false
     @State private var alertTitle = ""
@@ -36,8 +37,9 @@ extension AddNoteSheet {
     
     private func add() {
         do {
-            try interactor.validate(note)
-            interactor.add(note)
+            try notesInteractor.validate(note)
+            notesInteractor.add(note)
+            logsInteractor.logNoteEvent(.add)
             hide()
         } catch {
             alertTitle = "\(error)"

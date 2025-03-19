@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct TaskDetailView<DI: DIProtocol>: View {
-    @EnvironmentObject private var interactor: DI.TasksInteractorType
+    @EnvironmentObject private var tasksInteractor: DI.TasksInteractorType
+    @EnvironmentObject private var logsInteractor: DI.LogsInteractorType
     @State private var task: TaskModel
     @State private var originalTask: TaskModel
     @State private var isTaskModified = false
@@ -48,10 +49,11 @@ extension TaskDetailView {
     
     private func save() {
         do {
-            try interactor.validate(task)
-            interactor.update(task)
+            try tasksInteractor.validate(task)
+            tasksInteractor.update(task)
             update()
             isTaskModified = false
+            logsInteractor.logTaskEvent(.edit)
         } catch {
             alertTitle = "\(error)"
             isAlertPresented = true
@@ -59,7 +61,7 @@ extension TaskDetailView {
     }
     
     private func update() {
-        guard let task = interactor.task(id: task.id) else {
+        guard let task = tasksInteractor.task(id: task.id) else {
             return
         }
         self.task = task

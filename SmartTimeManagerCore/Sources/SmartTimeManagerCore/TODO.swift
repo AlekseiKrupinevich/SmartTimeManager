@@ -1,17 +1,17 @@
 /*
  
  ver. 1.5
- – Product Analytics
- – Implement Settings
+ – Implement RealLogsInteractor
  – Implement reorder feature
- – Refactor EditTaskView, CoreDataWrapper, RealNotesRepository, RealTasksRepository, Notes' Filters
- – Implement notifications
- – Find by text in notes
- 
- ver. 1.6
- – Redesign
  – Localize on different languages
+ 
+ backlog
+ – Implement notifications
  – Implement AI
+ – Refactor EditTaskView, CoreDataWrapper, RealNotesRepository, RealTasksRepository, Notes' Filters
+ – Find by text in notes
+ – Redesign
+ – Implement Charts
  
  Improve data storage
  – Clear cache option in Settings

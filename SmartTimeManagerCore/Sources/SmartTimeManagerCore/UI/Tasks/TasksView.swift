@@ -2,7 +2,8 @@ import SwiftUI
 
 struct TasksView<DI: DIProtocol>: View {
     @StateObject private var viewModel = TasksViewModel<DI>()
-    @EnvironmentObject private var interactor: DI.TasksInteractorType
+    @EnvironmentObject private var tasksInteractor: DI.TasksInteractorType
+    @EnvironmentObject private var logsInteractor: DI.LogsInteractorType
     @EnvironmentObject private var appState: AppState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
@@ -43,11 +44,12 @@ struct TasksView<DI: DIProtocol>: View {
         }
         .environmentObject(viewModel)
         .onAppear {
-            viewModel.interactor = interactor
+            viewModel.tasksInteractor = tasksInteractor
+            viewModel.logsInteractor = logsInteractor
             viewModel.appState = appState
             viewModel.update()
         }
-        .onReceive(interactor.objectWillChange) { _ in
+        .onReceive(tasksInteractor.objectWillChange) { _ in
             viewModel.update()
         }
     }
