@@ -1,7 +1,6 @@
 /*
  
  ver. 1.5
- – Implement RealLogsInteractor
  – Implement reorder feature
  – Localize on different languages
  
@@ -12,6 +11,8 @@
  – Find by text in notes
  – Redesign
  – Implement Charts
+ – Automatically add birthday greetings from contacts
+ – Highlight holidays and weekends
  
  Improve data storage
  – Clear cache option in Settings
