@@ -1,7 +1,7 @@
 import SwiftUI
 
 class AppState: ObservableObject {
-    let didBecomeActiveNotification = NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+    let didBecomeActiveNotification = NotificationCenter.default.publisher(for: UIScene.didActivateNotification)
     private var subscribersOnDidBecomeActive: [any DidBecomeActiveSubscriber] = []
     
     @Published var settings = Settings()

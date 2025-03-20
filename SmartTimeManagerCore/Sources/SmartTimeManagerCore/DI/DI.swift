@@ -56,7 +56,10 @@ class DIBuilder<DI: DIProtocol> {
         let tasksInteractor = RealDI.TasksInteractorType(repository: tasksRepository)
         let notesRepository = RealNotesRepository()
         let notesInteractor = RealDI.NotesInteractorType(repository: notesRepository)
-        let logsInteractor = RealLogsInteractor()
+        let logsInteractor = RealLogsInteractor(
+            tasksRepository: tasksRepository,
+            notesRepository: notesRepository
+        )
         return DIContainer(
             appState: appState, 
             tasksInteractor: tasksInteractor,

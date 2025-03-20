@@ -2,5 +2,5 @@ import SwiftUI
 
 struct Settings {
     @AppStorage("isNumberingDisplayed")
-    var isNumberingDisplayed: Bool = false
+    var isNumberingDisplayed = false
 }

@@ -1,5 +1,3 @@
-import SwiftUI
-
 class MockLogsInteractor: LogsInteractor {
     func logAppStarted() {
         print("Log: App started")

@@ -1,7 +1,7 @@
 import SwiftUI
 
-extension View {
-    var isMac: Bool {
+extension UIDevice {
+    static var isMac: Bool {
 #if targetEnvironment(macCatalyst)
         return true
 #else
