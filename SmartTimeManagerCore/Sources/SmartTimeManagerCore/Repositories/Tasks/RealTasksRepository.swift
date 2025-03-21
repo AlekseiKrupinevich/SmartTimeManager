@@ -121,7 +121,8 @@ class RealTasksRepository: TasksRepository {
             title: task.name ?? "",
             notes: task.descr ?? "",
             type: type,
-            completionDates: completionDates
+            completionDates: completionDates,
+            priority: Int(task.priority)
         )
     }
     

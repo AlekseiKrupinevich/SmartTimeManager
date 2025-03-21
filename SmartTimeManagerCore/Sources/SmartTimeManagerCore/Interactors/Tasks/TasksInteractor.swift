@@ -6,5 +6,6 @@ protocol TasksInteractor: ObservableObject {
     func validate(_ task: TaskModel) throws
     func add(_ task: TaskModel)
     func update(_ task: TaskModel)
+    func update(_ tasks: [TaskModel])
     func deleteTask(id: String)
 }

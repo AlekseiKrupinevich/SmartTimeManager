@@ -184,6 +184,10 @@ struct CoreDataWrapper {
                 return state
             })
             
+            if let priority = taskModel.priority {
+                task.priority = Int64(priority)
+            }
+            
             try? viewContext.save()
         }
     }

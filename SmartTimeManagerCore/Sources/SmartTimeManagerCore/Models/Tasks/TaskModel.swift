@@ -6,6 +6,7 @@ struct TaskModel {
     var notes: String
     var type: TaskType
     var completionDates: Set<Date>
+    var priority: Int?
     
     enum TaskType {
         case oneTime(OneTime)

@@ -16,6 +16,9 @@ struct TaskListView<DI: DIProtocol>: View {
                 }
             }
             .onDelete(perform: viewModel.deleteTasks)
+            .onMove { from, to in
+                viewModel.move(from: from, to: to)
+            }
         }
         .listStyle(PlainListStyle())
     }

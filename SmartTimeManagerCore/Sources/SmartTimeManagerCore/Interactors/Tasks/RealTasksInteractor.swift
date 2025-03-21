@@ -13,6 +13,15 @@ class RealTasksInteractor: TasksInteractor {
     func tasks(on date: Date) -> [TaskModel] {
         repository.tasks()
             .filter { $0.isOccurring(on: date) }
+            .sorted { lhs, rhs in
+                guard
+                    let lhsPriority = lhs.priority,
+                    let rhsPriority = rhs.priority
+                else {
+                    return false
+                }
+                return lhsPriority < rhsPriority
+            }
     }
     
     func task(id: String) -> TaskModel? {
@@ -44,6 +53,10 @@ class RealTasksInteractor: TasksInteractor {
         task.notes = task.notes.trimmingCharacters(in: .whitespacesAndNewlines)
         repository.update(task: task)
         objectWillChange.send()
+    }
+    
+    func update(_ tasks: [TaskModel]) {
+        tasks.forEach { update($0) }
     }
     
     func deleteTask(id: String) {

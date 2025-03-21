@@ -102,4 +102,13 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscribe
             selectDate(date: today)
         }
     }
+    
+    func move(from: IndexSet, to: Int) {
+        items.move(fromOffsets: from, toOffset: to)
+        var tasks = items.compactMap { tasksInteractor?.task(id: $0.id) }
+        for i in tasks.indices {
+            tasks[i].priority = i
+        }
+        tasksInteractor?.update(tasks)
+    }
 }
