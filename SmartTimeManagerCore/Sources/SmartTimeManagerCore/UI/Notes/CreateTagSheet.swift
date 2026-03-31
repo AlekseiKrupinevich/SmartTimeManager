@@ -12,22 +12,22 @@ struct CreateTagSheet: View {
             List {
                 CustomTextEditor(
                     text: $text,
-                    placeholder: "Text"
+                    placeholder: "Text".localized
                 )
                 .focused($focused)
-                ColorPicker("Color", selection: $color)
+                ColorPicker("Color".localized, selection: $color)
             }
             .listStyle(PlainListStyle())
-            .navigationTitle("New Tag")
+            .navigationTitle("New Tag".localized)
             .toolbar {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     Button(action: cancel) {
-                        Text("Cancel")
+                        Text("Cancel".localized)
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: { create(text, color) }) {
-                        Text("Create")
+                        Text("Create".localized)
                     }
                 }
             }

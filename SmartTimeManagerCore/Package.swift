@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "SmartTimeManagerCore",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v17),
         .macOS(.v14)
@@ -15,6 +16,11 @@ let package = Package(
         )
     ],
     targets: [
-        .target(name: "SmartTimeManagerCore")
+        .target(
+            name: "SmartTimeManagerCore",
+            resources: [
+                .process("Resources")
+            ]
+        )
     ]
 )

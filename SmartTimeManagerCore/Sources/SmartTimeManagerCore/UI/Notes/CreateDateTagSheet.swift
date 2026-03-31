@@ -12,7 +12,7 @@ struct CreateDateTagSheet: View {
                 typePicker
                 if template == .dayTemplete {
                     DatePicker(
-                        "Date",
+                        "Date".localized,
                         selection: $date,
                         displayedComponents: .date
                     )
@@ -24,16 +24,16 @@ struct CreateDateTagSheet: View {
                 }
             }
             .listStyle(PlainListStyle())
-            .navigationTitle("Date Tag")
+            .navigationTitle("Date Tag".localized)
             .toolbar {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     Button(action: cancel) {
-                        Text("Cancel")
+                        Text("Cancel".localized)
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: didTapCreateButton) {
-                        Text("Create")
+                        Text("Create".localized)
                     }
                 }
             }
@@ -55,15 +55,15 @@ struct CreateDateTagSheet: View {
         Picker(
             selection: $template,
             content: {
-                Text("Day")
+                Text("Day".localized)
                     .tag(String.dayTemplete)
-                Text("Month")
+                Text("Month".localized)
                     .tag(String.monthTemplete)
-                Text("Year")
+                Text("Year".localized)
                     .tag(String.yearTemplete)
             },
             label: {
-                Text("Type")
+                Text("Type".localized)
             }
         )
     }
@@ -83,21 +83,21 @@ struct CreateDateTagSheet: View {
         Picker(
             selection: month,
             content: {
-                Text("January").tag(1)
-                Text("Febrary").tag(2)
-                Text("March").tag(3)
-                Text("April").tag(4)
-                Text("May").tag(5)
-                Text("June").tag(6)
-                Text("July").tag(7)
-                Text("August").tag(8)
-                Text("September").tag(9)
-                Text("October").tag(10)
-                Text("November").tag(11)
-                Text("December").tag(12)
+                Text("January".localized).tag(1)
+                Text("Febrary".localized).tag(2)
+                Text("March".localized).tag(3)
+                Text("April".localized).tag(4)
+                Text("May".localized).tag(5)
+                Text("June".localized).tag(6)
+                Text("July".localized).tag(7)
+                Text("August".localized).tag(8)
+                Text("September".localized).tag(9)
+                Text("October".localized).tag(10)
+                Text("November".localized).tag(11)
+                Text("December".localized).tag(12)
             },
             label: {
-                Text("Month")
+                Text("Month".localized)
             }
         )
     }
@@ -122,7 +122,7 @@ struct CreateDateTagSheet: View {
                 }
             },
             label: {
-                Text("Year")
+                Text("Year".localized)
             }
         )
     }

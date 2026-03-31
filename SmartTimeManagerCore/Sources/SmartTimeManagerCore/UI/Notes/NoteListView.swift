@@ -10,7 +10,7 @@ struct NoteListView<DI: DIProtocol>: View {
                     NoteListItemView<DI>(itemViewModel: item)
                         .contextMenu {
                             Button(action: { viewModel.deleteNote(id: item.id) }) {
-                                Text("Delete")
+                                Text("Delete".localized)
                             }
                         }
                 }

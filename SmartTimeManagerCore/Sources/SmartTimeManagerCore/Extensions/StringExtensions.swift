@@ -32,3 +32,9 @@ extension String {
         self.init(red + green + blue + alpha)
     }
 }
+
+extension String {
+    var localized: String {
+        String(localized: String.LocalizationValue(self), bundle: .module)
+    }
+}

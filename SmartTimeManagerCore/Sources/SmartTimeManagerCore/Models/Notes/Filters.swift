@@ -80,16 +80,16 @@ struct Filters {
                 
                 switch dateFilter.template {
                 case .dayTemplete:
-                    return "Days"
+                    return "Days".localized
                 case .monthTemplete:
-                    return "Months"
+                    return "Months".localized
                 case .yearTemplete:
-                    return "Years"
+                    return "Years".localized
                 default:
                     return ""
                 }
             case .withoutTags:
-                return "Without tags"
+                return "Without tags".localized
             }
         }
         

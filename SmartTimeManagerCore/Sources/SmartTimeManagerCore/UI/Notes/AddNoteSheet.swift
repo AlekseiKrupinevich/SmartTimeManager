@@ -11,16 +11,16 @@ struct AddNoteSheet<DI: DIProtocol>: View {
     var body: some View {
         NavigationView {
             EditNoteView<DI>(note: $note, needFocusOnText: true)
-                .navigationTitle("Add Note")
+                .navigationTitle("Add Note".localized)
                 .toolbar {
                     ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: hide) {
-                            Text("Cancel")
+                            Text("Cancel".localized)
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: add) {
-                            Text("Add")
+                            Text("Add".localized)
                         }
                     }
                 }

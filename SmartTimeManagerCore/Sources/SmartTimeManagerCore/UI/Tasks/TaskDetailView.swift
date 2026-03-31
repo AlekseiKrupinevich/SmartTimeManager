@@ -17,17 +17,17 @@ struct TaskDetailView<DI: DIProtocol>: View {
     
     var body: some View {
         EditTaskView(task: $task, needFocusOnTitle: false)
-            .navigationTitle("Task")
+            .navigationTitle("Task".localized)
             .toolbar {
                 if isTaskModified {
                     ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: cancel) {
-                            Text("Cancel")
+                            Text("Cancel".localized)
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: save) {
-                            Text("Save")
+                            Text("Save".localized)
                         }
                     }
                 }

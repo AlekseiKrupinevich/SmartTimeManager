@@ -10,7 +10,7 @@ struct TaskListView<DI: DIProtocol>: View {
                     TaskListItemView<DI>(itemViewModel: item)
                         .contextMenu {
                             Button(action: { viewModel.deleteTask(id: item.id) }) {
-                                Text("Delete")
+                                Text("Delete".localized)
                             }
                         }
                 }

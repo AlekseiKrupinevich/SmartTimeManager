@@ -16,16 +16,16 @@ struct ApplyFiltersSheet<DI: DIProtocol>: View {
     var body: some View {
         NavigationView {
             content
-                .navigationTitle("Filters")
+                .navigationTitle("Filters".localized)
                 .toolbar {
                     ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: hide) {
-                            Text("Cancel")
+                            Text("Cancel".localized)
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: apply) {
-                            Text("Apply")
+                            Text("Apply".localized)
                         }
                     }
                 }
@@ -76,18 +76,18 @@ struct ApplyFiltersSheet<DI: DIProtocol>: View {
     
     var content: some View {
         List {
-            Picker("Filter type", selection: $filterType) {
-                Text("No filters")
+            Picker("Filter type".localized, selection: $filterType) {
+                Text("No filters".localized)
                     .tag(1)
-                Text("By tag")
+                Text("By tag".localized)
                     .tag(2)
-                Text("By date")
+                Text("By date".localized)
                     .tag(3)
-                Text("Without tags")
+                Text("Without tags".localized)
                     .tag(4)
             }
             if filterType == 2 {
-                Picker("Tag", selection: $selectedTagId) {
+                Picker("Tag".localized, selection: $selectedTagId) {
                     ForEach(tags) { tag in
                         Text(tag.text)
                             .tag(tag.id)
@@ -95,24 +95,24 @@ struct ApplyFiltersSheet<DI: DIProtocol>: View {
                 }
             }
             if filterType == 3 {
-                Picker("Date format", selection: $dateFormat) {
-                    Text("Days")
+                Picker("Date format".localized, selection: $dateFormat) {
+                    Text("Days".localized)
                         .tag(1)
-                    Text("Months")
+                    Text("Months".localized)
                         .tag(2)
-                    Text("Years")
+                    Text("Years".localized)
                         .tag(3)
                 }
                 VStack {
-                    Toggle("From", isOn: $isFromEnabled)
+                    Toggle("From".localized, isOn: $isFromEnabled)
                     if isFromEnabled {
-                        DatePicker("Date", selection: $fromDate, displayedComponents: .date)
+                        DatePicker("Date".localized, selection: $fromDate, displayedComponents: .date)
                     }
                 }
                 VStack {
-                    Toggle("To", isOn: $isToEnabled)
+                    Toggle("To".localized, isOn: $isToEnabled)
                     if isToEnabled {
-                        DatePicker("Date", selection: $toDate, displayedComponents: .date)
+                        DatePicker("Date".localized, selection: $toDate, displayedComponents: .date)
                     }
                 }
             }

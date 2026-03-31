@@ -20,6 +20,6 @@ struct EditNoteView<DI: DIProtocol>: View {
     }
     
     private var text: some View {
-        CustomTextEditor(text: $note.text, placeholder: "Text")
+        CustomTextEditor(text: $note.text, placeholder: "Text".localized)
     }
 }

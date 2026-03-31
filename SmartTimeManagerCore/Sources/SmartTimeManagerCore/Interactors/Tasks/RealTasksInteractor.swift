@@ -31,9 +31,9 @@ class RealTasksInteractor: TasksInteractor {
     func validate(_ task: TaskModel) throws {
         switch task.validate() {
         case .emptyTitle:
-            throw "The title is empty"
+            throw "The title is empty".localized
         case .noOccurrences:
-            throw "There are no occurrences"
+            throw "There are no occurrences".localized
         case .valid:
             break
         }

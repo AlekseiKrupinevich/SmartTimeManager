@@ -16,7 +16,7 @@ struct NoteTagsView<DI: DIProtocol>: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            Text("Tags")
+            Text("Tags".localized)
                 .font(.headline)
                 .foregroundStyle(.secondary)
             ScrollView(.horizontal) {

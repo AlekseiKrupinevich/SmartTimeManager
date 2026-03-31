@@ -6,10 +6,10 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Toggle("Numbering displayed", isOn: $appState.settings.isNumberingDisplayed)
+                Toggle("Numbering displayed".localized, isOn: $appState.settings.isNumberingDisplayed)
             }
             .listStyle(PlainListStyle())
-            .navigationTitle("Settings")
+            .navigationTitle("Settings".localized)
         }
         .navigationViewStyle(StackNavigationViewStyle())
     }

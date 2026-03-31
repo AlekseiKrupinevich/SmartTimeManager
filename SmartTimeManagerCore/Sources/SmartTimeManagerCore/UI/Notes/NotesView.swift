@@ -8,7 +8,7 @@ struct NotesView<DI: DIProtocol>: View {
     var body: some View {
         NavigationView {
             NoteListView<DI>()
-                .navigationTitle("Notes")
+                .navigationTitle("Notes".localized)
                 .toolbar {
                     ToolbarItemGroup(placement: .topBarLeading) {
                         let filter = viewModel.filters.appliedFilter
@@ -18,7 +18,7 @@ struct NotesView<DI: DIProtocol>: View {
                                 Text(filter.text)
                                     .foregroundStyle(filter.color)
                             } else {
-                                Text("No filters")
+                                Text("No filters".localized)
                                     .foregroundStyle(Color.secondary)
                             }
                         }

@@ -15,16 +15,16 @@ struct AddTaskSheet<DI: DIProtocol>: View {
     var body: some View {
         NavigationView {
             EditTaskView(task: $task, needFocusOnTitle: true)
-                .navigationTitle("Add Task")
+                .navigationTitle("Add Task".localized)
                 .toolbar {
                     ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: hide) {
-                            Text("Cancel")
+                            Text("Cancel".localized)
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: add) {
-                            Text("Add")
+                            Text("Add".localized)
                         }
                     }
                 }

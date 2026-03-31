@@ -25,7 +25,7 @@ class RealNotesInteractor: NotesInteractor {
     func validate(_ note: NoteModel) throws {
         switch note.validate() {
         case .emptyText:
-            throw "There is no text"
+            throw "There is no text".localized
         case .valid:
             break
         }

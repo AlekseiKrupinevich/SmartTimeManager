@@ -8,27 +8,27 @@ struct TasksSelectDateSheet<DI: DIProtocol>: View {
         NavigationView {
             VStack {
                 DatePicker(
-                    "Select Date",
+                    "Select Date".localized,
                     selection:$date,
                     displayedComponents: [.date]
                 )
                 .datePickerStyle(GraphicalDatePickerStyle())
                 Button(action: selectToday) {
-                    Text("Select Today")
+                    Text("Select Today".localized)
                 }
                 Spacer()
             }
             .padding(5)
-            .navigationTitle("Select Date")
+            .navigationTitle("Select Date".localized)
             .toolbar {
                 ToolbarItemGroup(placement: .cancellationAction) {
                     Button(action: hide) {
-                        Text("Cancel")
+                        Text("Cancel".localized)
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(action: selectDate) {
-                        Text("Select")
+                        Text("Select".localized)
                     }
                 }
             }

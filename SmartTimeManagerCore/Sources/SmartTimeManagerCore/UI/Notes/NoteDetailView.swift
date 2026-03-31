@@ -17,17 +17,17 @@ struct NoteDetailView<DI: DIProtocol>: View {
     
     var body: some View {
         EditNoteView<DI>(note: $note, needFocusOnText: false)
-            .navigationTitle("Note")
+            .navigationTitle("Note".localized)
             .toolbar {
                 if isNoteModified {
                     ToolbarItemGroup(placement: .cancellationAction) {
                         Button(action: cancel) {
-                            Text("Cancel")
+                            Text("Cancel".localized)
                         }
                     }
                     ToolbarItem(placement: .confirmationAction) {
                         Button(action: save) {
-                            Text("Save")
+                            Text("Save".localized)
                         }
                     }
                 }

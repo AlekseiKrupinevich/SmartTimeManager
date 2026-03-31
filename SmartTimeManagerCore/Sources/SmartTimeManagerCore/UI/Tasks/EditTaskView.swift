@@ -38,11 +38,11 @@ struct EditTaskView: View {
     }
     
     private var title: some View {
-        CustomTextEditor(text: $task.title, placeholder: "Title")
+        CustomTextEditor(text: $task.title, placeholder: "Title".localized)
     }
     
     private var notes: some View {
-        CustomTextEditor(text: $task.notes, placeholder: "Notes")
+        CustomTextEditor(text: $task.notes, placeholder: "Notes".localized)
     }
     
     private var typePicker: some View {
@@ -72,9 +72,9 @@ struct EditTaskView: View {
                 }
             ),
             content: {
-                Text("One-time")
+                Text("One-time".localized)
                     .tag(1)
-                Text("Periodic")
+                Text("Periodic".localized)
                     .tag(2)
             },
             label: { }
@@ -97,7 +97,7 @@ struct EditTaskView: View {
                 }
             ),
             displayedComponents: .date,
-            label: { Text("Date") }
+            label: { Text("Date".localized) }
         )
         .datePickerStyle(.compact)
         .fixedSize()
@@ -105,7 +105,7 @@ struct EditTaskView: View {
     }
     
     private func timeFrameToggle(_ periodic: TaskModel.TaskType.Periodic) -> some View {
-        Toggle("Time Frame", isOn: Binding(
+        Toggle("Time Frame".localized, isOn: Binding(
             get: {
                 if case .off = periodic.timeFrame {
                     return false
@@ -149,7 +149,7 @@ struct EditTaskView: View {
                 }
             ),
             displayedComponents: .date,
-            label: { Text("Start Date") }
+            label: { Text("Start Date".localized) }
         )
         .datePickerStyle(.compact)
         .fixedSize()
@@ -172,7 +172,7 @@ struct EditTaskView: View {
             ),
             in: timeFrame.startDate...,
             displayedComponents: .date,
-            label: { Text("End Date") }
+            label: { Text("End Date".localized) }
         )
         .datePickerStyle(.compact)
         .fixedSize()
@@ -216,16 +216,16 @@ struct EditTaskView: View {
                 }
             ),
             content: {
-                Text("Everyday")
+                Text("Everyday".localized)
                     .tag(1)
-                Text("Weekly")
+                Text("Weekly".localized)
                     .tag(2)
-                Text("Monthly")
+                Text("Monthly".localized)
                     .tag(3)
-                Text("Last day of the month")
+                Text("Last day of the month".localized)
                     .tag(4)
             },
-            label: { Text("Period Type") }
+            label: { Text("Period Type".localized) }
         )
         .fixedSize()
         .padding(.vertical, 5)

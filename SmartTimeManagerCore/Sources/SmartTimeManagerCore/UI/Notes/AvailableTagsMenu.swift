@@ -20,7 +20,7 @@ struct AvailableTagsMenu<DI: DIProtocol>: View {
                             }
                         },
                         label: {
-                            Label("Date", systemImage: "calendar")
+                            Label("Date".localized, systemImage: "calendar")
                         }
                     )
                     ForEach(viewModel.availableTags) { tag in
@@ -29,7 +29,7 @@ struct AvailableTagsMenu<DI: DIProtocol>: View {
                         }
                     }
                     Button(action: createNewTag) {
-                        Label("New tag", systemImage: "plus")
+                        Label("New tag".localized, systemImage: "plus")
                     }
                 }
             },
@@ -48,7 +48,7 @@ extension AvailableTagsMenu {
             createCustomDateTag()
         default:
             if viewModel.isApplied(dateTag) {
-                displayError("The tag is already applied")
+                displayError("The tag is already applied".localized)
             } else {
                 viewModel.applyDateTag(dateTag)
             }
