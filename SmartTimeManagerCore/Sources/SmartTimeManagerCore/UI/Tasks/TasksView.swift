@@ -17,12 +17,8 @@ struct TasksView<DI: DIProtocol>: View {
                             Image(systemName: "arrowtriangle.left")
                         }
                         Button(action: showSelectDateSheet) {
-                            if UIDevice.isMac || horizontalSizeClass == .compact {
-                                Text(viewModel.date.string)
-                                    .monospaced()
-                            } else {
-                                Text(viewModel.date.shortString)
-                            }
+                            Image(systemName: "calendar")
+                            Text(viewModel.date.shortString)
                         }
                         Button(action: viewModel.showNextDay) {
                             Image(systemName: "arrowtriangle.right")

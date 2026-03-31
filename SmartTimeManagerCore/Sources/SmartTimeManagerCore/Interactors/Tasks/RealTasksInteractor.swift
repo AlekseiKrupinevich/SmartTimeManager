@@ -14,13 +14,12 @@ class RealTasksInteractor: TasksInteractor {
         repository.tasks()
             .filter { $0.isOccurring(on: date) }
             .sorted { lhs, rhs in
-                guard
-                    let lhsPriority = lhs.priority,
-                    let rhsPriority = rhs.priority
-                else {
-                    return false
+                let lhsPriority = lhs.priority ?? 0
+                let rhsPriority = rhs.priority ?? 0
+                if lhsPriority != rhsPriority {
+                    return lhsPriority < rhsPriority
                 }
-                return lhsPriority < rhsPriority
+                return false
             }
     }
     
@@ -43,6 +42,12 @@ class RealTasksInteractor: TasksInteractor {
         var task = task
         task.title = task.title.trimmingCharacters(in: .whitespacesAndNewlines)
         task.notes = task.notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        if task.priority == nil {
+            task.priority = repository.tasks()
+                .compactMap(\.priority)
+                .max()
+                .map { $0 + 1 } ?? 0
+        }
         repository.add(task: task)
         objectWillChange.send()
     }

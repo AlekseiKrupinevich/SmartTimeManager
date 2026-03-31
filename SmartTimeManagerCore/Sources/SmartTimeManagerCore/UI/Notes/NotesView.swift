@@ -10,16 +10,13 @@ struct NotesView<DI: DIProtocol>: View {
             NoteListView<DI>()
                 .navigationTitle("Notes".localized)
                 .toolbar {
-                    ToolbarItemGroup(placement: .topBarLeading) {
-                        let filter = viewModel.filters.appliedFilter
+                    ToolbarItem(placement: .topBarLeading) {
                         Button(action: showApplyFiltersSheet) {
-                            Image(systemName: "line.3.horizontal.decrease")
-                            if let filter {
-                                Text(filter.text)
-                                    .foregroundStyle(filter.color)
+                            if viewModel.filters.appliedFilter != nil {
+                                Image(systemName: "line.3.horizontal.decrease")
+                                    .foregroundStyle(Color.accentColor)
                             } else {
-                                Text("No filters".localized)
-                                    .foregroundStyle(Color.secondary)
+                                Image(systemName: "line.3.horizontal.decrease")
                             }
                         }
                     }

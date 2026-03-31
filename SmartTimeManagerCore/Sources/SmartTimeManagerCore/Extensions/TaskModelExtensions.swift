@@ -78,7 +78,8 @@ extension TaskModel: Equatable {
         lhs.title == rhs.title &&
         lhs.notes == rhs.notes &&
         lhs.type == rhs.type &&
-        lhs.completionDates == rhs.completionDates
+        lhs.completionDates == rhs.completionDates &&
+        lhs.priority == rhs.priority
     }
 }
 
