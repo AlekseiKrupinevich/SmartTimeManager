@@ -5,15 +5,15 @@ struct ContentView<DI: DIProtocol>: View {
         TabView {
             TasksView<DI>()
                 .tabItem {
-                    Label("Tasks", systemImage: "list.bullet")
+                    Label("Tasks".localized, systemImage: "list.bullet")
                 }
             NotesView<DI>()
                 .tabItem {
-                    Label("Notes", systemImage: "note.text")
+                    Label("Notes".localized, systemImage: "note.text")
                 }
             SettingsView()
                 .tabItem { 
-                    Label("Settings", systemImage: "gearshape")
+                    Label("Settings".localized, systemImage: "gearshape")
                 }
         }
     }
