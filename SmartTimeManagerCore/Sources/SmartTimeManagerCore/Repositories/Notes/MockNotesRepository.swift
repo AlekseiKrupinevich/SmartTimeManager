@@ -1,6 +1,7 @@
 import SwiftUI
 
-class MockNotesRepository: NotesRepository {
+@MainActor
+class MockNotesRepository: @MainActor NotesRepository {
     private var _notes: [NoteModel] = [
         .init(
             id: "1",

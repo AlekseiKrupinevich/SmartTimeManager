@@ -1,6 +1,7 @@
 import Foundation
 
-class MockTasksRepository: TasksRepository {
+@MainActor
+class MockTasksRepository: @MainActor TasksRepository {
     private var _tasks: [TaskModel] = [
         .init(
             id: "1",

@@ -1,6 +1,7 @@
 import Foundation
 
-class RealTasksRepository: TasksRepository {
+@MainActor
+class RealTasksRepository: @MainActor TasksRepository {
     private var subscriptions: [() -> Void] = []
     private var _tasks: [TaskModel] = []
     
@@ -41,19 +42,16 @@ class RealTasksRepository: TasksRepository {
     }
     
     init() {
-        CoreDataWrapper.subscribeOnUpdates(
-            self,
-            selector: #selector(handleRemoteChange)
-        )
+        CoreDataWrapper.subscribeOnUpdates { [weak self] _ in
+            self?.fetchUpdatesIfNeeded()
+        }
         fetchUpdatesIfNeeded()
     }
     
     deinit {
-        CoreDataWrapper.unsubscribe(self)
-    }
-    
-    @objc private func handleRemoteChange() {
-        fetchUpdatesIfNeeded()
+        DispatchQueue.main.async {
+            CoreDataWrapper.unsubscribe(self)
+        }
     }
     
     private func convert(_ task: Task) -> TaskModel? {
@@ -130,15 +128,13 @@ class RealTasksRepository: TasksRepository {
     private var needToRepeatUpdate = false
     
     private func fetchUpdatesIfNeeded() {
-        DispatchQueue.main.async {
-            if self.isUpdateInProgress {
-                self.needToRepeatUpdate = true
-                return
-            }
-            self.isUpdateInProgress = true
-            self.needToRepeatUpdate = false
-            self.fetchUpdates()
+        if self.isUpdateInProgress {
+            self.needToRepeatUpdate = true
+            return
         }
+        self.isUpdateInProgress = true
+        self.needToRepeatUpdate = false
+        self.fetchUpdates()
     }
     
     private func fetchUpdates() {
@@ -163,8 +159,6 @@ class RealTasksRepository: TasksRepository {
     
     private func fetchTasks() async -> [TaskModel] {
         let tasks = await CoreDataWrapper.tasks()
-        return await MainActor.run {
-            return tasks.compactMap { convert($0) }
-        }
+        return tasks.compactMap { convert($0) }
     }
 }

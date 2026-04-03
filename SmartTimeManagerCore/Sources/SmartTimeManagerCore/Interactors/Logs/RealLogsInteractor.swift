@@ -1,6 +1,7 @@
 import SwiftUI
 
-class RealLogsInteractor: LogsInteractor {
+@MainActor
+class RealLogsInteractor: @MainActor LogsInteractor {
     private let tasksRepository: any TasksRepository
     private let notesRepository: any NotesRepository
     
@@ -50,9 +51,7 @@ class RealLogsInteractor: LogsInteractor {
         URLSession.shared
     }
     
-    private var url: URL {
-        URL(string: "https://aleksei-krupinevich.com:12321/logs/v1/")!
-    }
+    private lazy var url = URL(string: "https://aleksei-krupinevich.com:12321/logs/v1/")!
     
     private var appStartedBody: Data? {
         struct Body: Encodable {

@@ -1,6 +1,7 @@
 import SwiftUI
 
-class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscriber {
+@MainActor
+class TasksViewModel<DI: DIProtocol>: ObservableObject, @MainActor DidBecomeActiveSubscriber {
     @Published var date = Date().withoutTime
     @Published var dateOfLastUpdate = Date().withoutTime
     @Published var items: [TaskListItemViewModel] = []
@@ -19,7 +20,9 @@ class TasksViewModel<DI: DIProtocol>: ObservableObject, DidBecomeActiveSubscribe
     }
     
     deinit {
-        appState?.unsubscribeOnDidBecomeActive(self)
+        DispatchQueue.main.async {
+            self.appState?.unsubscribeOnDidBecomeActive(self)
+        }
     }
     
     func appDidBecomeActive() {

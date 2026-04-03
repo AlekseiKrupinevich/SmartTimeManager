@@ -1,6 +1,7 @@
 import CoreData
 import SwiftUI
 
+@MainActor
 struct CoreDataWrapper {
     private nonisolated(unsafe) static var container: NSPersistentCloudKitContainer = {
         guard let url = Bundle.module.url(forResource:"CoreDataModel", withExtension: "momd") else {
@@ -64,29 +65,25 @@ struct CoreDataWrapper {
     }
     
     static func task(id: String) async -> Task? {
-        await MainActor.run {
-            let request = NSFetchRequest<Task>(entityName: "Task")
-            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
-            let fetchResult = try? viewContext.fetch(request)
-            return fetchResult?.first
-        }
+        let request = NSFetchRequest<Task>(entityName: "Task")
+        request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+        let fetchResult = try? viewContext.fetch(request)
+        return fetchResult?.first
     }
     
     static func tasks() async -> [Task] {
-        await MainActor.run {
-            let request = NSFetchRequest<Task>(entityName: "Task")
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.createDate, ascending: true)]
-            let fetchResult = try? viewContext.fetch(request)
-            return fetchResult ?? []
-        }
+        let request = NSFetchRequest<Task>(entityName: "Task")
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Task.createDate, ascending: true)]
+        let fetchResult = try? viewContext.fetch(request)
+        return fetchResult ?? []
     }
     
-    static func subscribeOnUpdates(_ subscriber: Any, selector: Selector) {
+    static func subscribeOnUpdates(_ block: @escaping (Notification) -> Void) {
         NotificationCenter.default.addObserver(
-            subscriber,
-            selector: selector,
-            name: NSNotification.Name.NSPersistentStoreRemoteChange,
-            object: container.persistentStoreCoordinator
+            forName: NSNotification.Name.NSPersistentStoreRemoteChange,
+            object: container.persistentStoreCoordinator,
+            queue: .main,
+            using: block
         )
     }
     
@@ -95,18 +92,13 @@ struct CoreDataWrapper {
     }
     
     static func add(_ taskModel: TaskModel) async {
-        var task: Task? = nil
-        await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                task = Task(context: viewContext)
-                task?.uuid = taskModel.id
-                task?.createDate = Date()
-                continuation.resume()
-            }
+        let task: Task? = Task(context: viewContext)
+        guard let task else {
+            return
         }
-        if let task {
-            await updateTask(task, taskModel: taskModel)
-        }
+        task.uuid = taskModel.id
+        task.createDate = Date()
+        await updateTask(task, taskModel: taskModel)
     }
     
     static func update(_ taskModel: TaskModel) async {
@@ -117,149 +109,132 @@ struct CoreDataWrapper {
     }
     
     static func updateTask(_ task: Task, taskModel: TaskModel) async {
-        await MainActor.run {
-            task.name = taskModel.title
-            task.descr = taskModel.notes
+        task.name = taskModel.title
+        task.descr = taskModel.notes
+        
+        let completionConditions: TaskCompletionConditions = {
+            if let completionConditions = task.completionConditions {
+                return completionConditions
+            } else {
+                let completionConditions = TaskCompletionConditions(context: viewContext)
+                task.completionConditions = completionConditions
+                return completionConditions
+            }
+        }()
+        
+        switch taskModel.type {
+        case .oneTime(let oneTime):
+            completionConditions.type = 1
+            completionConditions.oneTimeDate = oneTime.date
+            completionConditions.oneTimeCarryOver = oneTime.carryOver
+        case .periodic(let periodic):
+            completionConditions.type = 2
             
-            let completionConditions: TaskCompletionConditions = {
-                if let completionConditions = task.completionConditions {
-                    return completionConditions
-                } else {
-                    let completionConditions = TaskCompletionConditions(context: viewContext)
-                    task.completionConditions = completionConditions
-                    return completionConditions
-                }
-            }()
-            
-            switch taskModel.type {
-            case .oneTime(let oneTime):
-                completionConditions.type = 1
-                completionConditions.oneTimeDate = oneTime.date
-                completionConditions.oneTimeCarryOver = oneTime.carryOver
-            case .periodic(let periodic):
-                completionConditions.type = 2
-                
-                switch periodic.timeFrame {
-                case .on(let on):
-                    completionConditions.periodFrom = on.startDate
-                    completionConditions.periodTo = on.endDate
-                case .off:
-                    completionConditions.periodFrom = nil
-                    completionConditions.periodTo = nil
-                }
-                
-                switch periodic.type {
-                case .everyday:
-                    completionConditions.periodicType = 4
-                    completionConditions.points = ""
-                case .weekly(let days):
-                    completionConditions.periodicType = 1
-                    completionConditions.points = Array(days)
-                        .sorted()
-                        .map { String($0) }
-                        .joined(separator: ",")
-                case .monthly(let days):
-                    completionConditions.periodicType = 2
-                    completionConditions.points = Array(days)
-                        .sorted()
-                        .map { String($0) }
-                        .joined(separator: ",")
-                case .lastDayOfMonth:
-                    completionConditions.periodicType = 3
-                    completionConditions.points = ""
-                }
+            switch periodic.timeFrame {
+            case .on(let on):
+                completionConditions.periodFrom = on.startDate
+                completionConditions.periodTo = on.endDate
+            case .off:
+                completionConditions.periodFrom = nil
+                completionConditions.periodTo = nil
             }
             
-            let states: Set<TaskState> = (task.states as? Set<TaskState>) ?? []
-            
-            task.states = NSSet(array: taskModel.completionDates.map { date in
-                let state: TaskState
-                if let _state = states.first(where: { $0.associatedDate == date }) {
-                    state = _state
-                } else {
-                    state = TaskState(context: viewContext)
-                    state.associatedDate = date
-                }
-                state.complated = true
-                return state
-            })
-            
-            if let priority = taskModel.priority {
-                task.priority = Int64(priority)
+            switch periodic.type {
+            case .everyday:
+                completionConditions.periodicType = 4
+                completionConditions.points = ""
+            case .weekly(let days):
+                completionConditions.periodicType = 1
+                completionConditions.points = Array(days)
+                    .sorted()
+                    .map { String($0) }
+                    .joined(separator: ",")
+            case .monthly(let days):
+                completionConditions.periodicType = 2
+                completionConditions.points = Array(days)
+                    .sorted()
+                    .map { String($0) }
+                    .joined(separator: ",")
+            case .lastDayOfMonth:
+                completionConditions.periodicType = 3
+                completionConditions.points = ""
             }
-            
-            try? viewContext.save()
         }
+        
+        let states: Set<TaskState> = (task.states as? Set<TaskState>) ?? []
+        
+        task.states = NSSet(array: taskModel.completionDates.map { date in
+            let state: TaskState
+            if let _state = states.first(where: { $0.associatedDate == date }) {
+                state = _state
+            } else {
+                state = TaskState(context: viewContext)
+                state.associatedDate = date
+            }
+            state.complated = true
+            return state
+        })
+        
+        if let priority = taskModel.priority {
+            task.priority = Int64(priority)
+        }
+        
+        try? viewContext.save()
     }
     
     static func deleteTask(id: String) async {
         guard let task = await task(id: id) else {
             return
         }
-        await MainActor.run {
-            viewContext.delete(task)
-            try? viewContext.save()
-        }
+        viewContext.delete(task)
+        try? viewContext.save()
     }
     
     static func dayReports() async -> [DayReport] {
-        await MainActor.run {
-            let request = NSFetchRequest<DayReport>(entityName: "DayReport")
-            let fetchResult = try? viewContext.fetch(request)
-            return fetchResult ?? []
-        }
+        let request = NSFetchRequest<DayReport>(entityName: "DayReport")
+        let fetchResult = try? viewContext.fetch(request)
+        return fetchResult ?? []
     }
     
     static func monthReports() async -> [MonthReport] {
-        await MainActor.run {
-            let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
-            let fetchResult = try? viewContext.fetch(request)
-            return fetchResult ?? []
-        }
+        let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
+        let fetchResult = try? viewContext.fetch(request)
+        return fetchResult ?? []
     }
     
     static func notes() async -> [NoteModel] {
-        await MainActor.run {
-            let request = NSFetchRequest<Note>(entityName: "Note")
-            let fetchResult = try? viewContext.fetch(request)
-            return (fetchResult ?? []).map { convert($0) }
-        }
+        let request = NSFetchRequest<Note>(entityName: "Note")
+        let fetchResult = try? viewContext.fetch(request)
+        return (fetchResult ?? []).map { convert($0) }
     }
     
     static func add(_ noteModel: NoteModel) async {
-        var note: Note? = nil
-        await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                note = Note(context: viewContext)
-                note?.uuid = noteModel.id
-                continuation.resume()
-            }
+        let note: Note? = Note(context: viewContext)
+        guard let note else {
+            return
         }
-        if let note {
-            await updateNote(note, noteModel: noteModel)
-        }
+        note.uuid = noteModel.id
+        await updateNote(note, noteModel: noteModel)
     }
     
     static func updateNote(_ note: Note, noteModel: NoteModel) async {
-        await MainActor.run {
-            note.lastModifiedDate = Date()
-            note.text = noteModel.text
-            let tags: Set<NoteTag> = (note.tags as? Set<NoteTag>) ?? []
-            
-            note.tags = NSSet(array: noteModel.tags.map { tag in
-                let noteTag: NoteTag
-                if let _noteTag = tags.first(where: {
-                    convert($0) == tag
-                }) {
-                    noteTag = _noteTag
-                } else {
-                    noteTag = convert(tag)
-                }
-                return noteTag
-            })
-            
-            try? viewContext.save()
-        }
+        note.lastModifiedDate = Date()
+        note.text = noteModel.text
+        let tags: Set<NoteTag> = (note.tags as? Set<NoteTag>) ?? []
+        
+        note.tags = NSSet(array: noteModel.tags.map { tag in
+            let noteTag: NoteTag
+            if let _noteTag = tags.first(where: {
+                convert($0) == tag
+            }) {
+                noteTag = _noteTag
+            } else {
+                noteTag = convert(tag)
+            }
+            return noteTag
+        })
+        
+        try? viewContext.save()
     }
     
     private static func convert(_ noteTag: NoteTag) -> NoteModel.Tag? {
@@ -310,70 +285,51 @@ struct CoreDataWrapper {
     }
     
     static func deleteNote(id: String) async {
-        await MainActor.run {
-            let request = NSFetchRequest<Note>(entityName: "Note")
-            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
-            if let note = (try? viewContext.fetch(request))?.first {
-                viewContext.delete(note)
-            }
+        await deleteLegacyDayReport(id: id)
+        await deleteLegacyMonthReport(id: id)
+        
+        let request = NSFetchRequest<Note>(entityName: "Note")
+        request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+        if let note = (try? viewContext.fetch(request))?.first {
+            viewContext.delete(note)
         }
-        await MainActor.run {
-            let request = NSFetchRequest<DayReport>(entityName: "DayReport")
-            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
-            if let note = (try? viewContext.fetch(request))?.first {
-                viewContext.delete(note)
-            }
+        
+        try? viewContext.save()
+    }
+    
+    private static func deleteLegacyDayReport(id: String) async {
+        let request = NSFetchRequest<DayReport>(entityName: "DayReport")
+        request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [id])
+        if let note = (try? viewContext.fetch(request))?.first {
+            viewContext.delete(note)
         }
-        await MainActor.run {
-            guard
-                let uri = URL(string: id),
-                uri.scheme == "x-coredata",
-                let id = container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
-            else {
-                return
-            }
-            let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
-            request.predicate = NSPredicate(format: "(objectID = %@)", argumentArray: [id])
-            if let note = (try? viewContext.fetch(request))?.first {
-                viewContext.delete(note)
-            }
+    }
+    
+    private static func deleteLegacyMonthReport(id: String) async {
+        guard
+            let uri = URL(string: id),
+            uri.scheme == "x-coredata",
+            let id = container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
+        else {
+            return
         }
-        await MainActor.run {
-            try? viewContext.save()
+        let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
+        request.predicate = NSPredicate(format: "(objectID = %@)", argumentArray: [id])
+        if let note = (try? viewContext.fetch(request))?.first {
+            viewContext.delete(note)
         }
     }
     
     static func update(_ noteModel: NoteModel) async {
-        await MainActor.run {
-            let request = NSFetchRequest<DayReport>(entityName: "DayReport")
-            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [noteModel.id])
-            if let note = (try? viewContext.fetch(request))?.first {
-                viewContext.delete(note)
-            }
-        }
-        await MainActor.run {
-            guard
-                let uri = URL(string: noteModel.id),
-                uri.scheme == "x-coredata",
-                let id = container.persistentStoreCoordinator.managedObjectID(forURIRepresentation: uri)
-            else {
-                return
-            }
-            let request = NSFetchRequest<MonthReport>(entityName: "MonthReport")
-            request.predicate = NSPredicate(format: "(objectID = %@)", argumentArray: [id])
-            if let note = (try? viewContext.fetch(request))?.first {
-                viewContext.delete(note)
-            }
-        }
-        await MainActor.run {
-            try? viewContext.save()
-        }
-        var note: Note? = nil
-        await MainActor.run {
-            let request = NSFetchRequest<Note>(entityName: "Note")
-            request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [noteModel.id])
-            note = (try? viewContext.fetch(request))?.first
-        }
+        await deleteLegacyDayReport(id: noteModel.id)
+        await deleteLegacyMonthReport(id: noteModel.id)
+        
+        try? viewContext.save()
+        
+        let request = NSFetchRequest<Note>(entityName: "Note")
+        request.predicate = NSPredicate(format: "uuid == %@", argumentArray: [noteModel.id])
+        let note: Note? = (try? viewContext.fetch(request))?.first
+        
         if let note {
             await updateNote(note, noteModel: noteModel)
         } else {

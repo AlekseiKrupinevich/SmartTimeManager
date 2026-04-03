@@ -31,12 +31,13 @@ struct MockDI: DIProtocol {
     typealias LogsInteractorType = MockLogsInteractor
 }
 
-struct RealDI: DIProtocol {
+struct RealDI: @MainActor DIProtocol {
     typealias TasksInteractorType = RealTasksInteractor
     typealias NotesInteractorType = RealNotesInteractor
     typealias LogsInteractorType = RealLogsInteractor
 }
 
+@MainActor
 class DIBuilder<DI: DIProtocol> {
     static func build() -> DIContainer<DI> {
         if DI.self == RealDI.self {

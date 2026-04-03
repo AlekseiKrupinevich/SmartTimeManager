@@ -1,6 +1,7 @@
 import Foundation
 
-class RealNotesRepository: NotesRepository {
+@MainActor
+class RealNotesRepository: @MainActor NotesRepository {
     private var subscriptions: [() -> Void] = []
     private var _notes: [NoteModel] = []
     private var _tags: [NoteModel.Tag] = []
@@ -46,19 +47,16 @@ class RealNotesRepository: NotesRepository {
     }
     
     init() {
-        CoreDataWrapper.subscribeOnUpdates(
-            self,
-            selector: #selector(handleRemoteChange)
-        )
+        CoreDataWrapper.subscribeOnUpdates { [weak self] _ in
+            self?.fetchUpdatesIfNeeded()
+        }
         fetchUpdatesIfNeeded()
     }
     
     deinit {
-        CoreDataWrapper.unsubscribe(self)
-    }
-    
-    @objc private func handleRemoteChange() {
-        fetchUpdatesIfNeeded()
+        DispatchQueue.main.async {
+            CoreDataWrapper.unsubscribe(self)
+        }
     }
     
     private func convert(_ dayReport: DayReport) -> NoteModel {
@@ -81,15 +79,13 @@ class RealNotesRepository: NotesRepository {
     private var needToRepeatUpdate = false
     
     private func fetchUpdatesIfNeeded() {
-        DispatchQueue.main.async {
-            if self.isUpdateInProgress {
-                self.needToRepeatUpdate = true
-                return
-            }
-            self.isUpdateInProgress = true
-            self.needToRepeatUpdate = false
-            self.fetchUpdates()
+        if self.isUpdateInProgress {
+            self.needToRepeatUpdate = true
+            return
         }
+        self.isUpdateInProgress = true
+        self.needToRepeatUpdate = false
+        self.fetchUpdates()
     }
     
     private func fetchUpdates() {
@@ -118,19 +114,17 @@ class RealNotesRepository: NotesRepository {
         let dayNotes = await CoreDataWrapper.dayReports()
         let monthNotes = await CoreDataWrapper.monthReports()
         let notes = await CoreDataWrapper.notes()
-        return await MainActor.run {
-            return (dayNotes.map { convert($0) } + monthNotes.map { convert($0) } + notes)
-                .sorted { lhs, rhs in
-                    if
-                        let lhsTag = lhs.tags.first,
-                        let rhsTag = rhs.tags.first,
-                        lhsTag > rhsTag
-                    {
-                        return true
-                    }
-                    return false
+        return (dayNotes.map { convert($0) } + monthNotes.map { convert($0) } + notes)
+            .sorted { lhs, rhs in
+                if
+                    let lhsTag = lhs.tags.first,
+                    let rhsTag = rhs.tags.first,
+                    lhsTag > rhsTag
+                {
+                    return true
                 }
-        }
+                return false
+            }
     }
     
     private func getTags(notes: [NoteModel]) -> [NoteModel.Tag] {
