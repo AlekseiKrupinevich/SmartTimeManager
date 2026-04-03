@@ -10,7 +10,7 @@ struct TasksView<DI: DIProtocol>: View {
     var body: some View {
         NavigationView {
             TaskListView<DI>()
-                .navigationTitle("Tasks")
+                .navigationTitle("Tasks".localized)
                 .toolbar {
                     ToolbarItemGroup(placement: .topBarLeading) {
                         Button(action: viewModel.showPreviousDay) {
