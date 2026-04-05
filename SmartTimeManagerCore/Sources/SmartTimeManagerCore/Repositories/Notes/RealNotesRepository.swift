@@ -59,7 +59,7 @@ class RealNotesRepository: @MainActor NotesRepository {
         }
     }
     
-    private func convert(_ dayReport: DayReport) -> NoteModel {
+    nonisolated private func convert(_ dayReport: DayReport) -> NoteModel {
         NoteModel(
             id: dayReport.uuid ?? "",
             text: dayReport.text ?? "",
@@ -67,7 +67,7 @@ class RealNotesRepository: @MainActor NotesRepository {
         )
     }
     
-    private func convert(_ monthReport: MonthReport) -> NoteModel {
+    nonisolated private func convert(_ monthReport: MonthReport) -> NoteModel {
         NoteModel(
             id: monthReport.objectID.uriRepresentation().absoluteString,
             text: monthReport.text ?? "",
@@ -85,36 +85,39 @@ class RealNotesRepository: @MainActor NotesRepository {
         }
         self.isUpdateInProgress = true
         self.needToRepeatUpdate = false
+        
         self.fetchUpdates()
     }
     
     private func fetchUpdates() {
         _Concurrency.Task {
-            let notes = await fetchNotes()
-            let tags = getTags(notes: notes)
-            
-            DispatchQueue.main.async {
-                self._notes = notes
-                self._tags = tags
+            let dayNotes_ = await CoreDataWrapper.dayReports()
+            let monthNotes_ = await CoreDataWrapper.monthReports()
+            let notes_ = await CoreDataWrapper.notes()
+            DispatchQueue.global(qos: .background).async {
+                let notes = self.map(notes: (dayNotes_, monthNotes_, notes_))
+                let tags = self.getTags(notes: notes)
                 
-                for subscription in self.subscriptions {
-                    subscription()
-                }
-                
-                self.isUpdateInProgress = false
-                
-                if self.needToRepeatUpdate {
-                    self.fetchUpdatesIfNeeded()
+                DispatchQueue.main.async {
+                    self._notes = notes
+                    self._tags = tags
+                    
+                    for subscription in self.subscriptions {
+                        subscription()
+                    }
+                    
+                    self.isUpdateInProgress = false
+                    
+                    if self.needToRepeatUpdate {
+                        self.fetchUpdatesIfNeeded()
+                    }
                 }
             }
         }
     }
     
-    private func fetchNotes() async -> [NoteModel] {
-        let dayNotes = await CoreDataWrapper.dayReports()
-        let monthNotes = await CoreDataWrapper.monthReports()
-        let notes = await CoreDataWrapper.notes()
-        return (dayNotes.map { convert($0) } + monthNotes.map { convert($0) } + notes)
+    nonisolated private func map(notes: ([DayReport], [MonthReport], [NoteModel])) -> [NoteModel] {
+        return (notes.0.map { convert($0) } + notes.1.map { convert($0) } + notes.2)
             .sorted { lhs, rhs in
                 if
                     let lhsTag = lhs.tags.first,
@@ -127,7 +130,7 @@ class RealNotesRepository: @MainActor NotesRepository {
             }
     }
     
-    private func getTags(notes: [NoteModel]) -> [NoteModel.Tag] {
+    nonisolated private func getTags(notes: [NoteModel]) -> [NoteModel.Tag] {
         notes
             .flatMap { $0.tags }
             .reduce(into: Set<NoteModel.Tag>()) { result, tag in

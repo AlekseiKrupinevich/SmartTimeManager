@@ -54,7 +54,7 @@ class RealTasksRepository: @MainActor TasksRepository {
         }
     }
     
-    private func convert(_ task: Task) -> TaskModel? {
+    nonisolated private func convert(_ task: Task) -> TaskModel? {
         guard let completionConditions = task.completionConditions else {
             return nil
         }
@@ -139,26 +139,18 @@ class RealTasksRepository: @MainActor TasksRepository {
     
     private func fetchUpdates() {
         _Concurrency.Task {
-            let tasks = await fetchTasks()
+            let tasks = await CoreDataWrapper.tasks()
+            self._tasks = tasks.compactMap { self.convert($0) }
             
-            DispatchQueue.main.async {
-                self._tasks = tasks
-                
-                for subscription in self.subscriptions {
-                    subscription()
-                }
-                
-                self.isUpdateInProgress = false
-                
-                if self.needToRepeatUpdate {
-                    self.fetchUpdatesIfNeeded()
-                }
+            for subscription in self.subscriptions {
+                subscription()
+            }
+            
+            self.isUpdateInProgress = false
+            
+            if self.needToRepeatUpdate {
+                self.fetchUpdatesIfNeeded()
             }
         }
-    }
-    
-    private func fetchTasks() async -> [TaskModel] {
-        let tasks = await CoreDataWrapper.tasks()
-        return tasks.compactMap { convert($0) }
     }
 }
