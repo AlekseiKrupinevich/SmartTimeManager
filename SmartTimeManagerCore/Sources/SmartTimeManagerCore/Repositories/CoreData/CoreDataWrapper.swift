@@ -246,7 +246,7 @@ struct CoreDataWrapper {
             else {
                 return nil
             }
-            return .text((text: text, color: Color(color)))
+            return .text((text: text, color: Color(hex: color) ?? .gray))
         case 2:
             guard
                 let date = noteTag.date,

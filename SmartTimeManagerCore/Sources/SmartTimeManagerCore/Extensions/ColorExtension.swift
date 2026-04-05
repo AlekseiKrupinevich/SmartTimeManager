@@ -1,8 +1,8 @@
 import SwiftUI
 
 extension Color {
-    init?(_ string: String) {
-        let scanner = Scanner(string: string)
+    init?(hex: String) {
+        let scanner = Scanner(string: hex)
         var hexNumber: UInt64 = 0
         guard scanner.scanHexInt64(&hexNumber) else {
             return nil
