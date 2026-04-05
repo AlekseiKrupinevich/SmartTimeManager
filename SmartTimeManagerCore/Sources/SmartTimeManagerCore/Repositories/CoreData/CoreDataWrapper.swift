@@ -48,7 +48,7 @@ struct CoreDataWrapper {
         return container.viewContext
     }
     
-    static func sizeOfDatabase() -> Int {
+    nonisolated static func sizeOfDatabase() -> Int {
         return (try? container.persistentStoreDescriptions.first?.url?.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
     }
     

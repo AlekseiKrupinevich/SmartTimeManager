@@ -1,7 +1,6 @@
 import SwiftUI
 
-@MainActor
-class RealLogsInteractor: @MainActor LogsInteractor {
+class RealLogsInteractor: LogsInteractor {
     private let tasksRepository: any TasksRepository
     private let notesRepository: any NotesRepository
     

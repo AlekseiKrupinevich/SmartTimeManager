@@ -1,10 +1,7 @@
 /*
  
- ver. 1.5
- – Implement reorder feature
- – Localize on different languages
- 
  backlog
+ – Fix error: NSBundle (null) initWithPath failed because the resolved path is empty or nil
  – Implement notifications
  – Implement AI
  – Refactor EditTaskView, CoreDataWrapper, RealNotesRepository, RealTasksRepository, Notes' Filters
